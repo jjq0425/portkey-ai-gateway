@@ -32,6 +32,7 @@ if (
     const {
       getLocalGatewaySummary,
       readLocalGatewayConfig,
+      resolveLocalMcpServer,
       writeLocalGatewayConfig,
     } = await import('./localGateway/config');
 
@@ -77,6 +78,88 @@ if (
         config: nextConfig,
       });
     });
+
+    const proxyLocalMcpRequest = async (c: Context) => {
+      const requestUrl = new URL(c.req.url);
+      const resolvedMcpServer = await resolveLocalMcpServer(
+        requestUrl.pathname
+      );
+
+      if (!resolvedMcpServer) {
+        return c.json({ ok: false, message: 'MCP route not found.' }, 404);
+      }
+
+      const suffix = requestUrl.pathname.slice(
+        resolvedMcpServer.routePath.length
+      );
+      const upstreamBase = new URL(resolvedMcpServer.targetUrl);
+      const upstreamPath = `${upstreamBase.pathname.replace(/\/$/, '')}${
+        suffix || ''
+      }`;
+      const upstreamUrl = new URL(
+        `${upstreamPath}${requestUrl.search}`,
+        upstreamBase
+      );
+
+      const requestHeaders = new Headers(c.req.raw.headers);
+      requestHeaders.delete('host');
+      requestHeaders.set('x-portkey-mcp-alias', resolvedMcpServer.alias);
+      requestHeaders.set('x-portkey-mcp-route', resolvedMcpServer.routePath);
+
+      Object.entries(resolvedMcpServer.headers || {}).forEach(
+        ([key, value]) => {
+          requestHeaders.set(key, value);
+        }
+      );
+
+      const requestBody =
+        c.req.method === 'GET' || c.req.method === 'HEAD'
+          ? undefined
+          : await c.req.raw.arrayBuffer();
+
+      const requestBodyText = requestBody
+        ? Buffer.from(requestBody).toString('utf8')
+        : '';
+      let parsedRequestBody: any = null;
+
+      if (requestBodyText) {
+        try {
+          parsedRequestBody = JSON.parse(requestBodyText);
+        } catch {
+          parsedRequestBody = requestBodyText;
+        }
+      }
+
+      c.set('requestOptions', [
+        {
+          requestParams: {
+            routeType: 'mcp',
+            mcpAlias: resolvedMcpServer.alias,
+            routePath: resolvedMcpServer.routePath,
+            targetUrl: resolvedMcpServer.targetUrl,
+            method: c.req.method,
+            headers: Object.fromEntries(requestHeaders.entries()),
+            body: parsedRequestBody,
+          },
+        },
+      ]);
+
+      const upstreamResponse = await fetch(upstreamUrl, {
+        method: c.req.method,
+        headers: requestHeaders,
+        body: requestBody,
+        redirect: 'manual',
+      });
+
+      return new Response(upstreamResponse.body, {
+        status: upstreamResponse.status,
+        statusText: upstreamResponse.statusText,
+        headers: upstreamResponse.headers,
+      });
+    };
+
+    app.all('/:mcpAlias', proxyLocalMcpRequest);
+    app.all('/:mcpAlias/*', proxyLocalMcpRequest);
   };
 
   // Initialize static file serving
