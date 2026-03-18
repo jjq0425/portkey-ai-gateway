@@ -62,7 +62,7 @@ function getConfigPath() {
   return `${cwd}/${DEFAULT_CONFIG_DIR}/${DEFAULT_CONFIG_FILE}`;
 }
 
-function generateGatewayKey() {
+export function generateGatewayKey() {
   const randomValue =
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
       ? crypto.randomUUID().replace(/-/g, '')
@@ -360,6 +360,40 @@ export async function resolveLocalGatewayModelAlias(
       },
     },
   };
+}
+
+export async function appendLocalGatewayKey() {
+  const config = await readLocalGatewayConfig();
+  if (!config) {
+    throw new Error(LOCAL_RUNTIME_ONLY_MESSAGE);
+  }
+
+  const nextConfig = await writeLocalGatewayConfig({
+    ...config,
+    gatewayKeys: [...config.gatewayKeys, generateGatewayKey()],
+  });
+
+  return nextConfig;
+}
+
+export async function removeLocalGatewayKey(key: string) {
+  const config = await readLocalGatewayConfig();
+  if (!config) {
+    throw new Error(LOCAL_RUNTIME_ONLY_MESSAGE);
+  }
+
+  const nextGatewayKeys = config.gatewayKeys.filter((value) => value !== key);
+
+  if (nextGatewayKeys.length === 0) {
+    throw new Error('At least one local gateway key must remain.');
+  }
+
+  const nextConfig = await writeLocalGatewayConfig({
+    ...config,
+    gatewayKeys: nextGatewayKeys,
+  });
+
+  return nextConfig;
 }
 
 export async function getLocalGatewaySummary(headers?: Record<string, any>) {

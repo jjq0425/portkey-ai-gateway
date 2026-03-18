@@ -1,5 +1,7 @@
 import {
+  appendLocalGatewayKey,
   readLocalGatewayConfig,
+  removeLocalGatewayKey,
   resolveLocalMcpServer,
   resolveAuthorizationModelAlias,
   resolveLocalGatewayModelAlias,
@@ -105,6 +107,21 @@ describe('localGateway config', () => {
     expect(resolved?.providerConfig.apiKey).toBe('or-request-token');
     expect(resolved?.providerConfig.overrideParams?.model).toBe(
       'openrouter/hunter-alpha'
+    );
+  });
+
+  it('generates and removes multiple local gateway keys', async () => {
+    const appended = await appendLocalGatewayKey();
+
+    expect(appended.gatewayKeys).toHaveLength(2);
+    expect(appended.gatewayKeys[0]).toBe('pk-local-test');
+    expect(appended.gatewayKeys[1]).toMatch(/^pk-local-/);
+
+    const removed = await removeLocalGatewayKey(appended.gatewayKeys[1]);
+
+    expect(removed.gatewayKeys).toEqual(['pk-local-test']);
+    await expect(removeLocalGatewayKey('pk-local-test')).rejects.toThrow(
+      'At least one local gateway key must remain.'
     );
   });
 

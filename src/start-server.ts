@@ -34,8 +34,12 @@ if (
       readLocalGatewayConfig,
       resolveLocalMcpServer,
       writeLocalGatewayConfig,
+      appendLocalGatewayKey,
+      removeLocalGatewayKey,
     } = await import('./localGateway/config');
-    const { readPersistedLogEntries } = await import('./middlewares/log');
+    const { readPersistedLogEntries, clearPersistedLogs } = await import(
+      './middlewares/log'
+    );
 
     const scriptDir = dirname(fileURLToPath(import.meta.url));
 
@@ -49,6 +53,9 @@ if (
 
     // Set up routes
     app.get('/public/logs', serveIndex);
+    app.get('/public/models', serveIndex);
+    app.get('/public/mcp', serveIndex);
+    app.get('/public/keys', serveIndex);
     app.get('/public/', serveIndex);
 
     // Redirect `/public` to `/public/`
@@ -91,6 +98,48 @@ if (
         ok: true,
         logs: await readPersistedLogEntries(limit),
       });
+    });
+
+    app.delete('/public/api/logs', async (c: Context) => {
+      const result = await clearPersistedLogs();
+
+      return c.json({
+        ok: true,
+        ...result,
+      });
+    });
+
+    app.post('/public/api/local-gateway/keys', async (c: Context) => {
+      const nextConfig = await appendLocalGatewayKey();
+
+      return c.json({
+        ok: true,
+        config: nextConfig,
+      });
+    });
+
+    app.delete('/public/api/local-gateway/keys/:keyId', async (c: Context) => {
+      const keyId = decodeURIComponent(c.req.param('keyId'));
+
+      try {
+        const nextConfig = await removeLocalGatewayKey(keyId);
+
+        return c.json({
+          ok: true,
+          config: nextConfig,
+        });
+      } catch (error) {
+        return c.json(
+          {
+            ok: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Unable to remove gateway key.',
+          },
+          400
+        );
+      }
     });
 
     const proxyLocalMcpRequest = async (c: Context) => {

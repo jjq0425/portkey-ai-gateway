@@ -28,7 +28,12 @@ export function shouldLogRequest(url: string) {
       '/public',
       '/public/',
       '/public/logs',
+      '/public/models',
+      '/public/mcp',
+      '/public/keys',
       '/public/api/local-gateway',
+      '/public/api/local-gateway/keys',
+      '/public/api/logs',
       '/log/stream',
       '/favicon.ico',
     ].some(
@@ -155,6 +160,24 @@ export async function readPersistedLogEntries(limit = 100) {
   }
 
   return entries.slice(0, limit);
+}
+
+export async function clearPersistedLogs() {
+  const { mkdir, readdir, rm } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+
+  const logsDir = getLogsDir();
+  await mkdir(logsDir, { recursive: true });
+
+  const logFiles = (await readdir(logsDir)).filter((fileName) =>
+    fileName.endsWith('.jsonl')
+  );
+
+  await Promise.all(
+    logFiles.map((fileName) => rm(join(logsDir, fileName), { force: true }))
+  );
+
+  return { deletedCount: logFiles.length };
 }
 
 export function getLogSourceType(endpoint: string) {
