@@ -1,5 +1,4 @@
 import { getRuntimeKey } from 'hono/adapter';
-import { VALID_PROVIDERS } from '../globals';
 import { Options } from '../types/requestBody';
 
 export interface LocalGatewayModelConfigEntry {
@@ -178,98 +177,6 @@ function resolveProviderApiKey(modelConfig: LocalGatewayModelConfigEntry) {
   return '';
 }
 
-const DIRECT_PROVIDER_ENV_MAP: Record<string, string> = {
-  openrouter: 'OPENROUTER_API_KEY',
-  openai: 'OPENAI_API_KEY',
-  anthropic: 'ANTHROPIC_API_KEY',
-  groq: 'GROQ_API_KEY',
-  deepseek: 'DEEPSEEK_API_KEY',
-  cohere: 'COHERE_API_KEY',
-  'together-ai': 'TOGETHER_AI_API_KEY',
-  'mistral-ai': 'MISTRAL_AI_API_KEY',
-  'perplexity-ai': 'PERPLEXITY_AI_API_KEY',
-};
-
-function isLocalGatewayKey(token: string) {
-  return token.startsWith('pk-local-');
-}
-
-function getProviderApiKeyEnvName(provider: string) {
-  return (
-    DIRECT_PROVIDER_ENV_MAP[provider] ||
-    `${provider.toUpperCase().replace(/-/g, '_')}_API_KEY`
-  );
-}
-
-function createDirectProviderResolution(
-  modelName: string,
-  providerApiKey: string,
-  routingMode: 'local-config' | 'local-direct' | 'auth-header'
-): LocalGatewayResolution | null {
-  const [provider, ...rest] = modelName.split('/');
-  if (!provider || rest.length === 0 || !VALID_PROVIDERS.includes(provider)) {
-    return null;
-  }
-
-  return {
-    alias: modelName,
-    upstreamModel: modelName,
-    providerConfig: {
-      provider,
-      apiKey: providerApiKey,
-      forwardHeaders: [],
-      beforeRequestHooks: [],
-      afterRequestHooks: [],
-      defaultInputGuardrails: [],
-      defaultOutputGuardrails: [],
-      overrideParams: {
-        model: modelName,
-      },
-      metadata: {
-        localModelAlias: modelName,
-        localModelRoutingMode: routingMode,
-      },
-    } satisfies Options,
-  };
-}
-
-function resolveDirectProviderModel(modelName: string) {
-  const [provider, ...rest] = modelName.split('/');
-  if (!provider || rest.length === 0 || !VALID_PROVIDERS.includes(provider)) {
-    return null;
-  }
-
-  const providerApiKeyEnv = getProviderApiKeyEnvName(provider);
-  const providerApiKey = process.env[providerApiKeyEnv] || '';
-  if (!providerApiKey) {
-    throw new Error(
-      `Missing ${providerApiKeyEnv} for direct local routing of "${modelName}".`
-    );
-  }
-
-  return createDirectProviderResolution(
-    modelName,
-    providerApiKey,
-    'local-direct'
-  );
-}
-
-export function resolveAuthorizationModelAlias(
-  headers: Record<string, any>,
-  modelAlias?: string | null
-) {
-  if (!modelAlias) {
-    return null;
-  }
-
-  const bearerToken = getBearerToken(headers);
-  if (!bearerToken || isLocalGatewayKey(bearerToken)) {
-    return null;
-  }
-
-  return createDirectProviderResolution(modelAlias, bearerToken, 'auth-header');
-}
-
 export async function resolveLocalGatewayModelAlias(
   headers: Record<string, any>,
   modelAlias?: string | null
@@ -286,7 +193,7 @@ export async function resolveLocalGatewayModelAlias(
 
   const modelConfig = config.models[modelAlias];
   if (!modelConfig) {
-    return resolveDirectProviderModel(modelAlias);
+    return null;
   }
 
   const providerApiKey = resolveProviderApiKey(modelConfig);
@@ -302,17 +209,11 @@ export async function resolveLocalGatewayModelAlias(
     providerConfig: {
       provider: modelConfig.provider,
       apiKey: providerApiKey,
-      forwardHeaders: [],
-      beforeRequestHooks: [],
-      afterRequestHooks: [],
-      defaultInputGuardrails: [],
-      defaultOutputGuardrails: [],
       overrideParams: {
         model: modelConfig.upstreamModel,
       },
       metadata: {
         localModelAlias: modelAlias,
-        localModelRoutingMode: 'local-config',
       },
     },
   };

@@ -2,10 +2,7 @@ import { Context } from 'hono';
 import { CONTENT_TYPES, POWERED_BY, VALID_PROVIDERS } from '../../globals';
 import { configSchema } from './schema/config';
 import { Environment } from '../../utils/env';
-import {
-  resolveAuthorizationModelAlias,
-  resolveLocalGatewayModelAlias,
-} from '../../localGateway/config';
+import { resolveLocalGatewayModelAlias } from '../../localGateway/config';
 
 // Regex patterns for validation (defined once for reusability)
 const VALIDATION_PATTERNS = {
@@ -86,10 +83,6 @@ const LOCAL_ALIAS_SUPPORTED_PATHS = new Set([
   '/v1/completions',
   '/v1/embeddings',
   '/v1/responses',
-  '/chat/completions',
-  '/completions',
-  '/embeddings',
-  '/responses',
 ]);
 
 async function tryResolveLocalGatewayAlias(
@@ -111,16 +104,7 @@ async function tryResolveLocalGatewayAlias(
     const requestBody = (await clonedRequest.json()) as Record<string, unknown>;
     const modelAlias =
       typeof requestBody?.model === 'string' ? requestBody.model : null;
-    const localGatewayResolution = await resolveLocalGatewayModelAlias(
-      requestHeaders,
-      modelAlias
-    );
-
-    if (localGatewayResolution) {
-      return localGatewayResolution;
-    }
-
-    return resolveAuthorizationModelAlias(requestHeaders, modelAlias);
+    return await resolveLocalGatewayModelAlias(requestHeaders, modelAlias);
   } catch {
     return null;
   }
@@ -173,7 +157,7 @@ export const requestValidator = async (c: Context, next: any) => {
     return new Response(
       JSON.stringify({
         status: 'failure',
-        message: `Either x-${POWERED_BY}-config or x-${POWERED_BY}-provider header is required. For headerless OpenSDK routing, use either a valid local gateway bearer token plus a configured model alias, or an Authorization bearer token with a model in provider/model format.`,
+        message: `Either x-${POWERED_BY}-config or x-${POWERED_BY}-provider header is required. For local OpenSDK routing, use a valid Authorization bearer token and a configured model alias.`,
       }),
       {
         status: 400,
