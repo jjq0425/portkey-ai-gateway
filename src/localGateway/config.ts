@@ -275,21 +275,25 @@ export async function resolveLocalGatewayModelAlias(
   modelAlias?: string | null
 ): Promise<LocalGatewayResolution | null> {
   const config = await readLocalGatewayConfig();
+  // console.log('Local Gateway Config:', config)
   if (!config || !modelAlias) {
     return null;
   }
 
   const gatewayKey = getBearerToken(headers);
+  // console.log('Gateway Key from Headers:', gatewayKey);
   if (!gatewayKey || !config.gatewayKeys.includes(gatewayKey)) {
     return null;
   }
 
   const modelConfig = config.models[modelAlias];
+  // console.log(`Model config for alias "${modelAlias}":`, modelConfig);
   if (!modelConfig) {
     return resolveDirectProviderModel(modelAlias);
   }
 
   const providerApiKey = resolveProviderApiKey(modelConfig);
+  // console.log(`Resolved provider API key for alias "${modelAlias}":`, !!providerApiKey);
   if (!providerApiKey) {
     throw new Error(
       `Missing provider API key for local model alias \"${modelAlias}\". Set provider_api_key or provider_api_key_env in ${getConfigPath()}.`

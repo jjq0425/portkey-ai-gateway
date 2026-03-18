@@ -8,7 +8,7 @@ client = OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="openrouter/openrouter-hunter-alpha",
+    model="openrouter-hunter-alpha",
     messages=[{"role": "user", "content": "What is a fractal?"}]
 )
 
