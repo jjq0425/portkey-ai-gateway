@@ -4,7 +4,7 @@ from openai import OpenAI
 # 使用 Portkey 网关初始化 OpenAI SDK
 client = OpenAI(
     api_key="pk-local-32622da9596a42dca3066c9a449bf58e",
-    base_url="http://localhost:8787"
+    base_url="http://localhost:18788"
 )
 
 response = client.chat.completions.create(

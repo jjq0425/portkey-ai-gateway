@@ -10,7 +10,7 @@ import { realTimeHandlerNode } from './handlers/realtimeHandlerNode';
 import { requestValidator } from './middlewares/requestValidator';
 
 // Extract the port number from the command line arguments
-const defaultPort = 8787;
+const defaultPort = 18788;
 const args = process.argv.slice(2);
 const portArg = args.find((arg) => arg.startsWith('--port='));
 const port = portArg ? parseInt(portArg.split('=')[1]) : defaultPort;
