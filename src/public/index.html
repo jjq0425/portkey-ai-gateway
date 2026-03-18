@@ -379,6 +379,59 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logs-header-main {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    .logs-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .logs-refresh-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid #dbe4f0;
+      border-radius: 999px;
+      background: #f8fafc;
+    }
+
+    .logs-refresh-group label {
+      font-size: 0.85rem;
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .logs-refresh-input {
+      width: 88px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      color: #0f172a;
+      background: #fff;
+    }
+
+    .logs-refresh-hint {
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .logs-auto-status {
+      min-height: 1.2rem;
+      font-size: 0.82rem;
+      color: #475569;
     }
 
     .logs-table-container {
@@ -511,6 +564,10 @@
       .logs-header {
           flex-direction: column;
           align-items: stretch;
+      }
+
+      .logs-toolbar {
+          justify-content: flex-start;
       }
 
       .logs-search {
@@ -1366,13 +1423,6 @@
       color: #b91c1c;
     }
 
-    .logs-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-
     @media (max-width: 768px) {
       .admin-page-header,
       .management-item {
@@ -1754,11 +1804,21 @@
       <div class="card logs-card">
         <h2>实时日志</h2>
         <div class="logs-header">
-          <div>
+          <div class="logs-header-main">
             <div class="card-subtitle" style="margin:0;">可查看实时请求，支持一键清空历史日志。</div>
+            <div class="logs-auto-status" id="logsAutoRefreshStatus">自动刷新已关闭，实时日志流仍会持续推送新请求。</div>
             <div id="logsPageMessage" class="page-message"></div>
           </div>
-          <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+          <div class="logs-toolbar">
+            <button class="btn btn-outline" id="refreshLogsBtn">立即刷新</button>
+            <div class="logs-refresh-group">
+              <label for="logsAutoRefreshToggle">自动刷新</label>
+              <input type="checkbox" id="logsAutoRefreshToggle">
+              <input type="number" id="logsAutoRefreshIntervalInput" class="logs-refresh-input" min="5" step="1" value="30">
+              <span class="logs-refresh-hint">秒</span>
+            </div>
+            <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+          </div>
         </div>
         <div class="logs-table-container">
           <table class="logs-table">
@@ -3206,6 +3266,13 @@
       function mainTabFocus(tabName) {
         if(tabName === 'logs') {
           resetLogCounter();
+          syncLogsAutoRefreshTimer();
+        } else {
+          stopLogsAutoRefresh();
+        }
+
+        if (['main', 'models', 'mcp', 'keys'].includes(tabName)) {
+          fetchLocalGatewaySummary();
         }
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active'));
@@ -3239,7 +3306,13 @@
       const logDetailsContent = document.getElementById('logDetailsContent');
       const closeModal = document.querySelector('.close');
       const clearLogsBtn = document.querySelector('.btn-clear-logs');
+      const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+      const logsAutoRefreshToggle = document.getElementById('logsAutoRefreshToggle');
+      const logsAutoRefreshIntervalInput = document.getElementById('logsAutoRefreshIntervalInput');
+      const logsAutoRefreshStatus = document.getElementById('logsAutoRefreshStatus');
       const renderedLogKeys = new Set();
+      const DEFAULT_LOG_REFRESH_INTERVAL_SECONDS = 30;
+      let logRefreshTimer = null;
 
       // SSE for the logs
       let logSource;
@@ -3303,8 +3376,66 @@
         renderLogsLoadingState(message);
       }
 
-      async function loadPersistedLogs() {
-        resetRenderedLogs();
+      function sanitizeRefreshInterval(value) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+          return DEFAULT_LOG_REFRESH_INTERVAL_SECONDS;
+        }
+
+        return Math.max(5, Math.floor(parsed));
+      }
+
+      function getLogRefreshIntervalMs() {
+        const seconds = sanitizeRefreshInterval(logsAutoRefreshIntervalInput?.value);
+        if (logsAutoRefreshIntervalInput) {
+          logsAutoRefreshIntervalInput.value = String(seconds);
+        }
+        return seconds * 1000;
+      }
+
+      function updateLogsAutoRefreshStatus(message) {
+        if (logsAutoRefreshStatus) {
+          logsAutoRefreshStatus.textContent = message;
+        }
+      }
+
+      function stopLogsAutoRefresh() {
+        if (logRefreshTimer) {
+          window.clearInterval(logRefreshTimer);
+          logRefreshTimer = null;
+        }
+      }
+
+      function syncLogsAutoRefreshTimer() {
+        stopLogsAutoRefresh();
+
+        const intervalMs = getLogRefreshIntervalMs();
+        const intervalSeconds = intervalMs / 1000;
+
+        if (!logsAutoRefreshToggle?.checked) {
+          updateLogsAutoRefreshStatus('自动刷新已关闭，实时日志流仍会持续推送新请求。');
+          return;
+        }
+
+        logRefreshTimer = window.setInterval(() => {
+          loadPersistedLogs({
+            message: `正在刷新最近 100 条日志（每 ${intervalSeconds} 秒）...`,
+            successMessage: `已自动刷新日志（间隔 ${intervalSeconds} 秒）。`,
+            skipPageMessage: true,
+          });
+        }, intervalMs);
+
+        updateLogsAutoRefreshStatus(`自动刷新已开启，每 ${intervalSeconds} 秒同步一次最近 100 条日志。`);
+      }
+
+      async function loadPersistedLogs(options = {}) {
+        const {
+          message = '正在监听日志...',
+          successMessage = '',
+          skipPageMessage = true,
+        } = options;
+
+        resetRenderedLogs(message);
 
         try {
           const response = await fetch('/public/api/logs?limit=100');
@@ -3313,7 +3444,12 @@
           (payload.logs || []).slice().reverse().forEach(entry => {
             addLogEntry(entry, { appendToBottom: true });
           });
+
+          if (!skipPageMessage && successMessage) {
+            showPageMessage(logsPageMessage, successMessage);
+          }
         } catch (error) {
+          showPageMessage(logsPageMessage, '刷新日志失败。', 'error');
           console.error('Failed to hydrate persisted logs', error);
         }
       }
@@ -3664,6 +3800,16 @@
 
       loadPersistedLogs();
       clearLogsBtn.addEventListener('click', clearLogs);
+      refreshLogsBtn.addEventListener('click', () => {
+        loadPersistedLogs({
+          message: '正在手动刷新日志...',
+          successMessage: '日志已刷新。',
+          skipPageMessage: false,
+        });
+      });
+      logsAutoRefreshToggle.addEventListener('change', syncLogsAutoRefreshTimer);
+      logsAutoRefreshIntervalInput.addEventListener('change', syncLogsAutoRefreshTimer);
+      logsAutoRefreshIntervalInput.addEventListener('blur', syncLogsAutoRefreshTimer);
 
       function incrementLogCounter() {
         if(window.location.pathname != '/public/logs') {
