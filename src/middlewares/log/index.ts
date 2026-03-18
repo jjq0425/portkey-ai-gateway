@@ -4,6 +4,10 @@ import { getRuntimeKey } from 'hono/adapter';
 let logId = 0;
 const MAX_RESPONSE_LENGTH = 100000;
 
+function getLogsDir() {
+  return process.env.PORTKEY_LOGS_DIR || 'logs';
+}
+
 // Map to store all connected log clients
 const logClients: Map<string | number, any> = new Map();
 
@@ -14,6 +18,112 @@ const addLogClient = (clientId: any, client: any) => {
 const removeLogClient = (clientId: any) => {
   logClients.delete(clientId);
 };
+
+export function shouldLogRequest(url: string) {
+  try {
+    const { pathname } = new URL(url);
+
+    return [
+      '/v1/messages',
+      '/v1/messages/count_tokens',
+      '/v1/chat/completions',
+      '/chat/completions',
+      '/v1/completions',
+      '/completions',
+      '/v1/embeddings',
+      '/embeddings',
+      '/v1/images/generations',
+      '/v1/images/edits',
+      '/v1/audio/speech',
+      '/v1/audio/transcriptions',
+      '/v1/audio/translations',
+      '/v1/files',
+      '/v1/batches',
+      '/v1/responses',
+    ].some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+  } catch {
+    return url.includes('/v1/') || url.includes('/chat/completions');
+  }
+}
+
+export function getDisplayEndpoint(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.pathname}${parsedUrl.search}`;
+  } catch {
+    return url;
+  }
+}
+
+export function getLogsFilename(date = new Date()) {
+  return `${date.toISOString().slice(0, 10)}.jsonl`;
+}
+
+async function getResponsePayload(c: Context, requestOptionsArray: any[] = []) {
+  if (requestOptionsArray[0]?.requestParams?.stream) {
+    return { message: 'The response was a stream.' };
+  }
+
+  try {
+    return await c.res.clone().json();
+  } catch {
+    try {
+      return await c.res.clone().text();
+    } catch {
+      return null;
+    }
+  }
+}
+
+export function truncateResponsePayload(responsePayload: any) {
+  const responseString = JSON.stringify(responsePayload);
+
+  if (responseString.length > MAX_RESPONSE_LENGTH) {
+    return responseString.substring(0, MAX_RESPONSE_LENGTH) + '...';
+  }
+
+  return responsePayload;
+}
+
+export function createLogEntry({
+  time = new Date().toLocaleString(),
+  method,
+  endpoint,
+  status,
+  duration,
+  requestOptions = [],
+  response,
+}: {
+  time?: string;
+  method: string;
+  endpoint: string;
+  status: number;
+  duration: number;
+  requestOptions?: any[];
+  response?: any;
+}) {
+  return {
+    time,
+    method,
+    endpoint,
+    status,
+    duration,
+    requestOptions,
+    response,
+  };
+}
+
+export async function persistLogEntry(logEntry: Record<string, any>) {
+  const { appendFile, mkdir } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+
+  const logsDir = getLogsDir();
+  await mkdir(logsDir, { recursive: true });
+  const logFilePath = join(logsDir, getLogsFilename());
+  await appendFile(logFilePath, JSON.stringify(logEntry) + '\n', 'utf8');
+}
 
 const broadcastLog = async (log: any) => {
   const message = {
@@ -49,39 +159,40 @@ const broadcastLog = async (log: any) => {
 
 async function processLog(c: Context, start: number) {
   const ms = Date.now() - start;
-  if (!c.req.url.includes('/v1/')) return;
+  if (!shouldLogRequest(c.req.url)) return;
 
-  const requestOptionsArray = c.get('requestOptions');
-  if (!requestOptionsArray?.length) {
-    return;
-  }
+  const requestOptionsArray = c.get('requestOptions') ?? [];
 
   try {
-    const response = requestOptionsArray[0].requestParams.stream
-      ? { message: 'The response was a stream.' }
-      : await c.res.clone().json();
+    const responsePayload = truncateResponsePayload(
+      await getResponsePayload(c, requestOptionsArray)
+    );
 
-    const responseString = JSON.stringify(response);
-    if (responseString.length > MAX_RESPONSE_LENGTH) {
-      requestOptionsArray[0].response =
-        responseString.substring(0, MAX_RESPONSE_LENGTH) + '...';
-    } else {
-      requestOptionsArray[0].response = response;
+    if (requestOptionsArray.length) {
+      requestOptionsArray[0].response = responsePayload;
     }
-  } catch (error) {
-    console.error('Error processing log:', error);
-  }
 
-  await broadcastLog(
-    JSON.stringify({
-      time: new Date().toLocaleString(),
+    const logEntry = createLogEntry({
       method: c.req.method,
-      endpoint: c.req.url.split(':8787')[1],
+      endpoint: getDisplayEndpoint(c.req.url),
       status: c.res.status,
       duration: ms,
       requestOptions: requestOptionsArray,
-    })
-  );
+      response: responsePayload,
+    });
+
+    if (getRuntimeKey() === 'node') {
+      await persistLogEntry(logEntry);
+    }
+
+    if (!requestOptionsArray.length) {
+      return;
+    }
+
+    await broadcastLog(JSON.stringify(logEntry));
+  } catch (error) {
+    console.error('Error processing log:', error);
+  }
 }
 
 export const logHandler = () => {
