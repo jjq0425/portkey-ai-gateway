@@ -1,6 +1,10 @@
 import { Context, Next } from 'hono';
 import { HEADER_KEYS } from '../globals';
 import { env } from 'hono/adapter';
+import {
+  getLocalGatewaySummary,
+  validateLocalGatewayToken,
+} from '../localGateway/config';
 
 /**
  * Handles the models request. Returns a list of models supported by the Ai gateway.
@@ -33,6 +37,24 @@ export const modelsHandler = async (context: Context, next: Next) => {
 
   const containsProvider =
     providerHeader || virtualKey || config?.provider || config?.virtual_key;
+
+  const hasLocalGatewayToken = await validateLocalGatewayToken(headers);
+
+  if (!containsProvider && hasLocalGatewayToken) {
+    const summary = await getLocalGatewaySummary(headers);
+
+    return context.json({
+      object: 'list',
+      data:
+        summary?.models.map((model) => ({
+          id: model.alias,
+          object: 'model',
+          created: 0,
+          owned_by: `local/${model.provider}`,
+          root: model.upstreamModel,
+        })) || [],
+    });
+  }
 
   if (containsProvider || !controlPlaneURL) {
     return next();

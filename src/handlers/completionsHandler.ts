@@ -1,6 +1,6 @@
 import { RouterError } from '../errors/RouterError';
 import {
-  constructConfigFromRequestHeaders,
+  getResolvedProviderConfig,
   tryTargetsRecursively,
 } from './handlerUtils';
 import { Context } from 'hono';
@@ -17,7 +17,7 @@ export async function completionsHandler(c: Context): Promise<Response> {
   try {
     let request = await c.req.json();
     let requestHeaders = Object.fromEntries(c.req.raw.headers);
-    const camelCaseConfig = constructConfigFromRequestHeaders(requestHeaders);
+    const camelCaseConfig = getResolvedProviderConfig(c, requestHeaders);
 
     const tryTargetsResponse = await tryTargetsRecursively(
       c,

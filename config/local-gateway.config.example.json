@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "generatedAt": "2026-03-18T00:00:00.000Z",
+  "gatewayKeys": ["pk-local-replace-me"],
+  "models": {
+    "openrouter-auto": {
+      "provider": "openrouter",
+      "upstreamModel": "openrouter/auto",
+      "providerApiKeyEnv": "OPENROUTER_API_KEY",
+      "displayName": "OpenRouter Auto",
+      "description": "Default alias for OpenSDK-compatible local routing."
+    },
+    "gpt-4o-mini-local": {
+      "provider": "openrouter",
+      "upstreamModel": "openai/gpt-4o-mini",
+      "providerApiKeyEnv": "OPENROUTER_API_KEY",
+      "displayName": "GPT-4o Mini Local",
+      "description": "Routes to OpenRouter with a globally unique local alias."
+    },
+    "openrouter/hunter-alpha": {
+      "provider": "openrouter",
+      "upstreamModel": "openrouter/hunter-alpha",
+      "providerApiKeyEnv": "OPENROUTER_API_KEY",
+      "displayName": "Hunter Alpha",
+      "description": "Optional explicit alias when you want the provider/model string itself to be callable."
+    }
+  }
+}
