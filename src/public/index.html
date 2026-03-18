@@ -371,7 +371,7 @@
     /* Logs styles */
     .card.logs-card {
       margin-top: 1rem;
-      max-width: 800px;
+      max-width: 1100px;
     }
 
     .logs-header {
@@ -387,7 +387,7 @@
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
       overflow: hidden;
       width: 100%;
-      max-width: 800px;
+      max-width: 1100px;
     }
 
     .logs-table {
@@ -533,15 +533,17 @@
     }
 
     .modal-content {
-      background-color: white;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(241, 245, 249, 0.96) 100%);
       margin: 0 0 0 auto;
-      padding: 2rem;
-      border-radius: 0rem;
-      width: 80%;
-      max-width: 500px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 2rem 2rem 3rem 2rem;
+      border-radius: 1.25rem 0 0 1.25rem;
+      width: min(56vw, 860px);
+      min-width: 420px;
+      max-width: 860px;
+      box-shadow: -16px 0 48px rgba(15, 23, 42, 0.16);
       height: 100vh;
       overflow-y: auto;
+      border-left: 1px solid rgba(191, 219, 254, 0.8);
     }
 
     .close {
@@ -554,6 +556,209 @@
 
     .close:hover {
       color: #000;
+    }
+
+    .log-detail-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .log-detail-subtitle {
+      color: #64748b;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .log-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+
+    .log-detail-stat,
+    .log-detail-section {
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(191, 219, 254, 0.8);
+      border-radius: 1rem;
+      padding: 1rem;
+      box-shadow: 0 18px 30px rgba(148, 163, 184, 0.12);
+    }
+
+    .log-detail-stat-label,
+    .log-detail-section-label {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.4rem;
+    }
+
+    .log-detail-stat-value {
+      font-size: 1rem;
+      color: #0f172a;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .log-detail-section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .log-detail-section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0;
+    }
+
+    .log-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .log-chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: rgba(59, 130, 246, 0.1);
+      color: #1d4ed8;
+      border: 1px solid rgba(96, 165, 250, 0.25);
+    }
+
+    .log-chip.success {
+      background: rgba(34, 197, 94, 0.12);
+      color: #15803d;
+      border-color: rgba(34, 197, 94, 0.22);
+    }
+
+    .log-chip.error {
+      background: rgba(239, 68, 68, 0.12);
+      color: #b91c1c;
+      border-color: rgba(239, 68, 68, 0.22);
+    }
+
+    .log-chip.mcp {
+      background: rgba(168, 85, 247, 0.12);
+      color: #7e22ce;
+      border-color: rgba(168, 85, 247, 0.22);
+    }
+
+    .log-flow-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .log-flow-item {
+      padding: 0.9rem 1rem;
+      border-radius: 0.9rem;
+      background: rgba(248, 250, 252, 0.95);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    .log-flow-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.45rem;
+    }
+
+    .log-json-block {
+      margin: 0;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 0.9rem;
+      padding: 1rem;
+      font-size: 0.84rem;
+      line-height: 1.55;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-empty-state {
+      color: #64748b;
+      font-size: 0.92rem;
+      padding: 0.4rem 0;
+    }
+
+    .mcp-section {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(191, 219, 254, 0.65);
+    }
+
+    .mcp-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .mcp-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .mcp-item {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(196, 181, 253, 0.45);
+      border-radius: 0.95rem;
+      padding: 1rem;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .mcp-item-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.35rem;
+    }
+
+    .mcp-item-meta {
+      font-size: 0.82rem;
+      color: #475569;
+      word-break: break-word;
+    }
+
+    .mcp-chip {
+      background: rgba(168, 85, 247, 0.12);
+      color: #7e22ce;
+      border: 1px solid rgba(168, 85, 247, 0.22);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1024px) {
+      .modal-content {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        border-radius: 0;
+      }
+
+      .log-detail-grid,
+      .mcp-item {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* style.css */
@@ -1122,35 +1327,51 @@
         <div class="local-gateway-header">
           <div>
             <div class="eyebrow">LOCAL CONTROL PLANE</div>
-            <h2>Alias-driven routing for OpenSDK clients</h2>
+            <h2>本地网关控制台</h2>
             <div class="card-subtitle">
-              Use one generated gateway key plus globally unique model aliases. The local config file controls the
-              provider, upstream model, and provider credential source for every alias.
+              使用一个本地 Gateway Key，同时管理模型别名与 MCP 代理映射。所有配置都会写入本地
+              <code>local-gateway.config.json</code>。
             </div>
           </div>
           <div class="local-gateway-pill">MODEL ROUTER</div>
         </div>
         <div class="local-gateway-grid">
           <div class="local-gateway-panel">
-            <div class="panel-label">Gateway key</div>
-            <div class="panel-value mono" id="localGatewayKey">Loading…</div>
-            <div class="panel-meta" id="localGatewayPath">Preparing local gateway config…</div>
+            <div class="panel-label">网关密钥</div>
+            <div class="panel-value mono" id="localGatewayKey">加载中…</div>
+            <div class="panel-meta" id="localGatewayPath">正在准备本地配置文件…</div>
           </div>
           <div class="local-gateway-panel">
-            <div class="panel-label">Configured aliases</div>
-            <div class="panel-value" id="localGatewayAliasCount">0 aliases</div>
-            <div class="panel-meta">Each alias maps to one provider + upstream model.</div>
+            <div class="panel-label">模型别名</div>
+            <div class="panel-value" id="localGatewayAliasCount">0 个别名</div>
+            <div class="panel-meta">每个别名会映射到一个 provider 与 upstream model。</div>
           </div>
         </div>
         <div class="local-alias-toolbar">
           <div class="toolbar-copy-group">
-            <button class="btn btn-outline" id="copyGatewayKeyBtn">Copy Gateway Key</button>
-            <button class="btn btn-outline" id="copyGatewayConfigBtn">Copy Config Path</button>
+            <button class="btn btn-outline" id="copyGatewayKeyBtn">复制网关密钥</button>
+            <button class="btn btn-outline" id="copyGatewayConfigBtn">复制配置路径</button>
           </div>
-          <button class="btn" id="addAliasBtn">Add Model Alias</button>
+          <button class="btn" id="addAliasBtn">新增模型别名</button>
         </div>
         <div class="alias-list" id="localAliasList">
-          <div class="alias-empty">No aliases configured yet.</div>
+          <div class="alias-empty">暂无模型别名配置。</div>
+        </div>
+
+        <div class="mcp-section">
+          <div class="mcp-section-header">
+            <div>
+              <h3 style="margin:0;">MCP 代理配置</h3>
+              <div class="card-subtitle" style="margin:0.35rem 0 0 0;">
+                例如把 <code>/mcp1</code> 映射到任意 MCP Server URL，并在日志中统一监控。
+              </div>
+            </div>
+            <button class="btn" id="addMcpBtn">新增 MCP 路由</button>
+          </div>
+          <div class="alias-meta" id="localGatewayMcpCount" style="margin-bottom:0.75rem;">0 个 MCP 路由</div>
+          <div class="mcp-list" id="localMcpList">
+            <div class="alias-empty">暂无 MCP 路由配置。</div>
+          </div>
         </div>
       </div>
 
@@ -1312,7 +1533,7 @@
 
     <div id="logs-tab" class="main-tab-content">
       <div class="card logs-card">
-        <h2>Real-time Logs</h2>
+        <h2>实时日志</h2>
         <div class="logs-header">
           <!-- <input type="text" class="logs-search" placeholder="Search logs..."> -->
           <!-- <button class="btn btn-clear-logs">Clear Logs</button> -->
@@ -1334,7 +1555,7 @@
               <tr class="loading-row">
                 <td colspan="6">
                     <div class="loading-animation"></div>
-                    Listening for logs...
+                    正在监听日志...
                 </td>
             </tr>
               <!-- Log entries will be dynamically added here -->
@@ -1347,7 +1568,7 @@
     <div class="modal" id="logDetailsModal">
       <div class="modal-content">
           <span class="close">&times;</span>
-          <h2>Log Details</h2>
+          <h2>日志详情</h2>
           <div id="logDetailsContent"></div>
       </div>
   </div>
@@ -1429,6 +1650,42 @@
           <button class="btn" id="saveAliasBtn">Save Alias</button>
         </div>
         <div id="aliasDialogMessage" class="dialog-description" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+
+    <div class="dialog-overlay" id="mcpDialog" style="display: none;">
+      <div class="dialog alias-dialog-content">
+        <div class="dialog-header">
+          <h3>新增 MCP 路由</h3>
+          <button class="icon-button" id="closeMcpDialog" aria-label="Close MCP dialog">✕</button>
+        </div>
+        <p class="dialog-description">
+          将本地统一入口（例如 <code>/mcp1</code>）代理到目标 MCP URL，并把请求纳入本地日志监控。
+        </p>
+        <form id="mcpForm">
+          <label for="mcpAliasInput">配置名称</label>
+          <input type="text" id="mcpAliasInput" class="input" placeholder="weather">
+
+          <label for="mcpRoutePathInput">本地路由</label>
+          <input type="text" id="mcpRoutePathInput" class="input" placeholder="/mcp1">
+
+          <label for="mcpTargetUrlInput">目标 MCP URL</label>
+          <input type="text" id="mcpTargetUrlInput" class="input" placeholder="http://127.0.0.1:3010/mcp">
+
+          <label for="mcpDisplayNameInput">显示名称</label>
+          <input type="text" id="mcpDisplayNameInput" class="input" placeholder="天气 MCP">
+
+          <label for="mcpDescriptionInput">描述</label>
+          <textarea id="mcpDescriptionInput" class="input textarea-input" placeholder="该路由用于代理天气类 MCP 服务"></textarea>
+
+          <label for="mcpHeadersInput">附加请求头（JSON，可选）</label>
+          <textarea id="mcpHeadersInput" class="input textarea-input" placeholder='{"x-mcp-token":"demo"}'></textarea>
+        </form>
+        <div class="dialog-actions">
+          <button class="btn btn-outline" id="cancelMcpBtn">取消</button>
+          <button class="btn" id="saveMcpBtn">保存 MCP 路由</button>
+        </div>
+        <div id="mcpDialogMessage" class="dialog-description" style="margin-top: 1rem;"></div>
       </div>
     </div>
 
@@ -1922,19 +2179,33 @@
       const localGatewayPath = document.getElementById('localGatewayPath');
       const localGatewayAliasCount = document.getElementById('localGatewayAliasCount');
       const localAliasList = document.getElementById('localAliasList');
+      const localGatewayMcpCount = document.getElementById('localGatewayMcpCount');
+      const localMcpList = document.getElementById('localMcpList');
       const copyGatewayKeyBtn = document.getElementById('copyGatewayKeyBtn');
       const copyGatewayConfigBtn = document.getElementById('copyGatewayConfigBtn');
       const addAliasBtn = document.getElementById('addAliasBtn');
+      const addMcpBtn = document.getElementById('addMcpBtn');
       const aliasDialog = document.getElementById('aliasDialog');
+      const mcpDialog = document.getElementById('mcpDialog');
       const closeAliasDialog = document.getElementById('closeAliasDialog');
+      const closeMcpDialog = document.getElementById('closeMcpDialog');
       const cancelAliasBtn = document.getElementById('cancelAliasBtn');
+      const cancelMcpBtn = document.getElementById('cancelMcpBtn');
       const saveAliasBtn = document.getElementById('saveAliasBtn');
+      const saveMcpBtn = document.getElementById('saveMcpBtn');
       const aliasDialogMessage = document.getElementById('aliasDialogMessage');
+      const mcpDialogMessage = document.getElementById('mcpDialogMessage');
       const aliasNameInput = document.getElementById('aliasNameInput');
       const aliasProviderSelect = document.getElementById('aliasProviderSelect');
       const aliasUpstreamModelInput = document.getElementById('aliasUpstreamModelInput');
       const aliasApiKeyEnvInput = document.getElementById('aliasApiKeyEnvInput');
       const aliasDescriptionInput = document.getElementById('aliasDescriptionInput');
+      const mcpAliasInput = document.getElementById('mcpAliasInput');
+      const mcpRoutePathInput = document.getElementById('mcpRoutePathInput');
+      const mcpTargetUrlInput = document.getElementById('mcpTargetUrlInput');
+      const mcpDisplayNameInput = document.getElementById('mcpDisplayNameInput');
+      const mcpDescriptionInput = document.getElementById('mcpDescriptionInput');
+      const mcpHeadersInput = document.getElementById('mcpHeadersInput');
 
       const camelToSnakeCase = str => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       const camelToKebabCase = str => str.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
@@ -1952,10 +2223,10 @@
         if (!localAliasList) return;
 
         const aliases = summary?.models || [];
-        localGatewayAliasCount.textContent = `${aliases.length} alias${aliases.length === 1 ? '' : 'es'}`;
+        localGatewayAliasCount.textContent = `${aliases.length} 个别名`;
 
         if (!aliases.length) {
-          localAliasList.innerHTML = '<div class="alias-empty">No aliases configured yet.</div>';
+          localAliasList.innerHTML = '<div class="alias-empty">暂无模型别名配置。</div>';
           return;
         }
 
@@ -1968,11 +2239,40 @@
                   <span class="alias-chip">${alias.provider}</span>
                 </div>
                 <div class="alias-meta mono">${alias.alias} → ${alias.upstreamModel}</div>
-                <div class="alias-meta">${alias.description || 'No description yet.'}</div>
+                <div class="alias-meta">${alias.description || '暂无描述。'}</div>
               </div>
-              <div class="alias-meta mono">${alias.providerApiKeyEnv || 'inline provider key'}</div>
+              <div class="alias-meta mono">${alias.providerApiKeyEnv || '内联 provider key'}</div>
             </div>`)
           .join('');
+      }
+
+      function renderLocalMcpServers(summary) {
+        if (!localMcpList || !localGatewayMcpCount) return;
+
+        const mcpServers = summary?.mcpServers || [];
+        localGatewayMcpCount.textContent = `${mcpServers.length} 个 MCP 路由`;
+
+        if (!mcpServers.length) {
+          localMcpList.innerHTML = '<div class="alias-empty">暂无 MCP 路由配置。</div>';
+          return;
+        }
+
+        localMcpList.innerHTML = mcpServers.map(server => `
+          <div class="mcp-item">
+            <div>
+              <div class="mcp-item-title">
+                <span>${server.displayName || server.alias}</span>
+                <span class="mcp-chip">${server.alias}</span>
+              </div>
+              <div class="mcp-item-meta mono">${server.routePath} → ${server.targetUrl}</div>
+              <div class="mcp-item-meta">${server.description || '暂无描述。'}</div>
+            </div>
+            <div>
+              <div class="mcp-item-meta"><strong>附加请求头：</strong></div>
+              <div class="mcp-item-meta mono">${Object.keys(server.headers || {}).length ? JSON.stringify(server.headers) : '无'}</div>
+            </div>
+          </div>
+        `).join('');
       }
 
       async function fetchLocalGatewaySummary() {
@@ -1985,12 +2285,13 @@
 
           if (!localGatewaySummary) return;
 
-          localGatewayKey.textContent = localGatewaySummary.defaultGatewayKey || 'Unavailable';
-          localGatewayPath.textContent = localGatewaySummary.configPath || 'No config path available';
+          localGatewayKey.textContent = localGatewaySummary.defaultGatewayKey || '不可用';
+          localGatewayPath.textContent = localGatewaySummary.configPath || '暂无可用配置路径';
           renderLocalAliases(localGatewaySummary);
+          renderLocalMcpServers(localGatewaySummary);
         } catch (error) {
-          localGatewayKey.textContent = 'Unavailable';
-          localGatewayPath.textContent = 'Unable to load local gateway config';
+          localGatewayKey.textContent = '不可用';
+          localGatewayPath.textContent = '无法读取本地网关配置';
           console.error('Failed to load local gateway summary', error);
         }
       }
@@ -2004,6 +2305,17 @@
       function closeAliasFormDialog() {
         aliasDialog.style.display = 'none';
         aliasDialogMessage.textContent = '';
+      }
+
+      function openMcpDialog() {
+        mcpDialog.style.display = 'flex';
+        mcpDialogMessage.textContent = '';
+        mcpAliasInput.focus();
+      }
+
+      function closeMcpFormDialog() {
+        mcpDialog.style.display = 'none';
+        mcpDialogMessage.textContent = '';
       }
 
       async function saveAlias() {
@@ -2061,6 +2373,77 @@
           console.error('Failed to save local alias', error);
         } finally {
           saveAliasBtn.classList.remove('loading');
+        }
+      }
+
+      async function saveMcpServer() {
+        const alias = mcpAliasInput.value.trim();
+        const routePath = mcpRoutePathInput.value.trim();
+        const targetUrl = mcpTargetUrlInput.value.trim();
+        const displayName = mcpDisplayNameInput.value.trim();
+        const description = mcpDescriptionInput.value.trim();
+        const headersText = mcpHeadersInput.value.trim();
+
+        if (!alias || !routePath || !targetUrl) {
+          mcpDialogMessage.textContent = '配置名称、本地路由和目标 MCP URL 为必填项。';
+          return;
+        }
+
+        let headers = {};
+        if (headersText) {
+          try {
+            headers = JSON.parse(headersText);
+          } catch (error) {
+            mcpDialogMessage.textContent = '附加请求头必须是合法 JSON。';
+            return;
+          }
+        }
+
+        const nextMcpServers = {
+          ...(localGatewaySummary?.mcpServers || []).reduce((acc, item) => {
+            acc[item.alias] = {
+              routePath: item.routePath,
+              targetUrl: item.targetUrl,
+              displayName: item.displayName,
+              description: item.description,
+              headers: item.headers,
+            };
+            return acc;
+          }, {}),
+          [alias]: {
+            routePath,
+            targetUrl,
+            displayName: displayName || alias,
+            description,
+            headers,
+          },
+        };
+
+        saveMcpBtn.classList.add('loading');
+
+        try {
+          await fetch('/public/api/local-gateway', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ mcpServers: nextMcpServers }),
+          });
+
+          mcpDialogMessage.textContent = `已保存 MCP 路由 ${alias}。`;
+          await fetchLocalGatewaySummary();
+          mcpAliasInput.value = '';
+          mcpRoutePathInput.value = '';
+          mcpTargetUrlInput.value = '';
+          mcpDisplayNameInput.value = '';
+          mcpDescriptionInput.value = '';
+          mcpHeadersInput.value = '';
+          setTimeout(closeMcpFormDialog, 500);
+        } catch (error) {
+          mcpDialogMessage.textContent = '当前无法保存 MCP 路由。';
+          console.error('Failed to save MCP route', error);
+        } finally {
+          saveMcpBtn.classList.remove('loading');
         }
       }
 
@@ -2267,12 +2650,16 @@
           // addLog('Routing config copied to clipboard');
       });
 
-      copyGatewayKeyBtn.addEventListener('click', () => copyText(localGatewaySummary?.defaultGatewayKey, 'Local gateway key copied.'));
-      copyGatewayConfigBtn.addEventListener('click', () => copyText(localGatewaySummary?.configPath, 'Local config path copied.'));
+      copyGatewayKeyBtn.addEventListener('click', () => copyText(localGatewaySummary?.defaultGatewayKey, '已复制本地 Gateway Key。'));
+      copyGatewayConfigBtn.addEventListener('click', () => copyText(localGatewaySummary?.configPath, '已复制本地配置路径。'));
       addAliasBtn.addEventListener('click', openAliasDialog);
+      addMcpBtn.addEventListener('click', openMcpDialog);
       closeAliasDialog.addEventListener('click', closeAliasFormDialog);
+      closeMcpDialog.addEventListener('click', closeMcpFormDialog);
       cancelAliasBtn.addEventListener('click', closeAliasFormDialog);
+      cancelMcpBtn.addEventListener('click', closeMcpFormDialog);
       saveAliasBtn.addEventListener('click', saveAlias);
+      saveMcpBtn.addEventListener('click', saveMcpServer);
 
       // Modify existing event listeners
       providerSelect.addEventListener('change', (e) => {
@@ -2325,6 +2712,7 @@
               providerDialog.style.display = 'none';
               apiKeyDialog.style.display = 'none';
               aliasDialog.style.display = 'none';
+              mcpDialog.style.display = 'none';
               logDetailsModal.style.display = 'none';
           }
       });
@@ -2374,6 +2762,7 @@
       const logDetailsContent = document.getElementById('logDetailsContent');
       const closeModal = document.querySelector('.close');
       const clearLogsBtn = document.querySelector('.btn-clear-logs');
+      const renderedLogKeys = new Set();
 
       // SSE for the logs
       let logSource;
@@ -2388,7 +2777,7 @@
         logSource.addEventListener('log', (event) => {
           const entry = JSON.parse(event.data);
           console.log('Received log entry', entry);
-          addLogEntry(entry.time, entry.method, entry.endpoint, entry.status, entry.duration, entry.requestOptions);
+          addLogEntry(entry);
         });
 
         // Handle heartbeat to keep connection alive
@@ -2422,22 +2811,316 @@
 
       setupLogSource();
 
-      function addLogEntry(time, method, endpoint, status, duration, requestOptions) {
+      async function loadPersistedLogs() {
+        try {
+          const response = await fetch('/public/api/logs?limit=100');
+          const payload = await response.json();
+
+          (payload.logs || []).slice().reverse().forEach(entry => {
+            addLogEntry(entry, { appendToBottom: true });
+          });
+        } catch (error) {
+          console.error('Failed to hydrate persisted logs', error);
+        }
+      }
+
+      function getStatusClass(status) {
+        return status >= 200 && status < 300 ? 'success' : 'error';
+      }
+
+      function getSourceLabel(entry) {
+        return entry.sourceType === 'mcp' ? 'MCP' : 'LLM';
+      }
+
+      function safeJsonStringify(value) {
+        if (value === undefined) {
+          return 'null';
+        }
+
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch (error) {
+          return String(value);
+        }
+      }
+
+      function extractConversationCards(entry) {
+        const requestParams = entry.requestOptions?.[0]?.requestParams || {};
+        const responsePayload = entry.requestOptions?.[0]?.response ?? entry.response;
+        const cards = [];
+
+        (requestParams.messages || []).forEach((message, index) => {
+          const role = message.role || 'unknown';
+          const titleMap = {
+            system: '系统提示词',
+            user: '用户提问',
+            assistant: '模型历史消息',
+            tool: '工具结果',
+          };
+
+          cards.push({
+            title: `${titleMap[role] || '消息'} #${index + 1}`,
+            payload: message,
+          });
+        });
+
+        if (requestParams.tools?.length) {
+          cards.push({
+            title: '工具定义（Tools）',
+            payload: requestParams.tools,
+          });
+        }
+
+        const toolCalls = responsePayload?.choices?.flatMap?.(choice => choice?.message?.tool_calls || []) || [];
+        if (toolCalls.length) {
+          cards.push({
+            title: '模型触发的工具调用',
+            payload: toolCalls,
+          });
+        }
+
+        const modelReply = responsePayload?.choices?.map?.(choice => choice?.message).filter(Boolean) || [];
+        if (modelReply.length) {
+          cards.push({
+            title: '模型回复',
+            payload: modelReply,
+          });
+        }
+
+        if (entry.sourceType === 'mcp') {
+          cards.unshift({
+            title: 'MCP 路由信息',
+            payload: {
+              endpoint: entry.endpoint,
+              method: entry.method,
+              status: entry.status,
+            },
+          });
+        }
+
+        return cards;
+      }
+
+      function createJsonBlock(value) {
+        const pre = document.createElement('pre');
+        pre.className = 'log-json-block';
+        pre.textContent = safeJsonStringify(value);
+        return pre;
+      }
+
+      function createStatCard(label, value) {
+        const card = document.createElement('div');
+        card.className = 'log-detail-stat';
+
+        const labelEl = document.createElement('div');
+        labelEl.className = 'log-detail-stat-label';
+        labelEl.textContent = label;
+
+        const valueEl = document.createElement('div');
+        valueEl.className = 'log-detail-stat-value';
+        valueEl.textContent = value;
+
+        card.appendChild(labelEl);
+        card.appendChild(valueEl);
+        return card;
+      }
+
+      function createSection(title, value, chips = []) {
+        const section = document.createElement('section');
+        section.className = 'log-detail-section';
+
+        const titleRow = document.createElement('div');
+        titleRow.className = 'log-detail-section-title-row';
+
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'log-detail-section-title';
+        titleEl.textContent = title;
+        titleRow.appendChild(titleEl);
+
+        if (chips.length) {
+          const chipRow = document.createElement('div');
+          chipRow.className = 'log-chip-row';
+
+          chips.forEach(chip => {
+            const chipEl = document.createElement('span');
+            chipEl.className = `log-chip ${chip.className || ''}`.trim();
+            chipEl.textContent = chip.text;
+            chipRow.appendChild(chipEl);
+          });
+
+          titleRow.appendChild(chipRow);
+        }
+
+        section.appendChild(titleRow);
+        section.appendChild(createJsonBlock(value));
+        return section;
+      }
+
+      function showLogDetails(entry) {
+          logDetailsContent.innerHTML = '';
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'log-detail-shell';
+
+          const subtitle = document.createElement('p');
+          subtitle.className = 'log-detail-subtitle';
+          subtitle.textContent = entry.sourceType === 'mcp'
+            ? '这里展示 MCP 代理请求的关键信息与原始 JSON。所有内容均以纯文本 JSON 显示，避免 HTML / 代码注入。'
+            : '这里展示 LLM 请求的结构化摘要与原始 JSON。所有内容均以纯文本 JSON 显示，避免 HTML / 代码注入。';
+          wrapper.appendChild(subtitle);
+
+          const statGrid = document.createElement('div');
+          statGrid.className = 'log-detail-grid';
+          statGrid.appendChild(createStatCard('时间', entry.time || '-'));
+          statGrid.appendChild(createStatCard('请求类型', getSourceLabel(entry)));
+          statGrid.appendChild(createStatCard('方法', entry.method || '-'));
+          statGrid.appendChild(createStatCard('Endpoint', entry.endpoint || '-'));
+          statGrid.appendChild(createStatCard('状态码', String(entry.status ?? '-')));
+          statGrid.appendChild(createStatCard('耗时', `${entry.duration ?? '-'} ms`));
+          wrapper.appendChild(statGrid);
+
+          const overviewSection = document.createElement('section');
+          overviewSection.className = 'log-detail-section';
+          const overviewTitle = document.createElement('div');
+          overviewTitle.className = 'log-detail-section-title-row';
+          const overviewHeading = document.createElement('h3');
+          overviewHeading.className = 'log-detail-section-title';
+          overviewHeading.textContent = '概览标签';
+          overviewTitle.appendChild(overviewHeading);
+          overviewSection.appendChild(overviewTitle);
+
+          const chipRow = document.createElement('div');
+          chipRow.className = 'log-chip-row';
+          [
+            { text: getSourceLabel(entry), className: entry.sourceType === 'mcp' ? 'mcp' : '' },
+            { text: `${entry.method || 'UNKNOWN'} 请求` },
+            { text: `状态 ${entry.status}`, className: getStatusClass(entry.status) },
+          ].forEach(chip => {
+            const chipEl = document.createElement('span');
+            chipEl.className = `log-chip ${chip.className || ''}`.trim();
+            chipEl.textContent = chip.text;
+            chipRow.appendChild(chipEl);
+          });
+          overviewSection.appendChild(chipRow);
+          wrapper.appendChild(overviewSection);
+
+          const flowSection = document.createElement('section');
+          flowSection.className = 'log-detail-section';
+          const flowTitle = document.createElement('h3');
+          flowTitle.className = 'log-detail-section-title';
+          flowTitle.textContent = '结构化内容';
+          flowSection.appendChild(flowTitle);
+
+          const flowList = document.createElement('div');
+          flowList.className = 'log-flow-list';
+          const flowCards = extractConversationCards(entry);
+
+          if (!flowCards.length) {
+            const empty = document.createElement('div');
+            empty.className = 'log-empty-state';
+            empty.textContent = '当前日志没有可提取的消息流、工具调用或 MCP 包装信息。';
+            flowList.appendChild(empty);
+          } else {
+            flowCards.forEach(card => {
+              const item = document.createElement('div');
+              item.className = 'log-flow-item';
+
+              const title = document.createElement('div');
+              title.className = 'log-flow-title';
+              title.textContent = card.title;
+              item.appendChild(title);
+              item.appendChild(createJsonBlock(card.payload));
+              flowList.appendChild(item);
+            });
+          }
+
+          flowSection.appendChild(flowList);
+          wrapper.appendChild(flowSection);
+
+          const requestParams = entry.requestOptions?.[0]?.requestParams || null;
+          wrapper.appendChild(createSection('原始请求 JSON', requestParams, [
+            { text: entry.sourceType === 'mcp' ? 'MCP 请求' : 'LLM 请求' },
+          ]));
+
+          wrapper.appendChild(createSection('原始响应 JSON', entry.requestOptions?.[0]?.response ?? entry.response ?? null, [
+            { text: `状态 ${entry.status}`, className: getStatusClass(entry.status) },
+          ]));
+
+          logDetailsContent.appendChild(wrapper);
+          logDetailsModal.style.display = 'block';
+      }
+
+      function getLogEntryKey(entry) {
+        return [
+          entry.time,
+          entry.method,
+          entry.endpoint,
+          entry.status,
+          entry.duration,
+          entry.sourceType,
+        ].join('|');
+      }
+
+      function addLogEntry(entry, options = {}) {
+          const entryKey = getLogEntryKey(entry);
+          if (renderedLogKeys.has(entryKey)) {
+            return;
+          }
+
+          renderedLogKeys.add(entryKey);
+          const loadingRow = logsTableBody.querySelector('.loading-row');
+          if (loadingRow) {
+            loadingRow.remove();
+          }
           const tr = document.createElement('tr');
           tr.classList.add('new-row');
-          tr.innerHTML = `
-              <td class="log-time">${time}</td>
-              <td class="log-method"><span class="log-method-value">${method}</span></td>
-              <td class="log-endpoint">${endpoint}</td>
-              <td class="log-status"><span class="${status>=200 && status<300 ? 'success' : 'error'}">${status}</span></td>
-              <td class="log-duration">${duration}ms</td>
-              <td><button class="btn-view-details">View Details</button></td>
-          `;
 
-          const viewDetailsBtn = tr.querySelector('.btn-view-details');
-          viewDetailsBtn.addEventListener('click', () => showLogDetails(time, method, endpoint, status, duration, requestOptions));
+          const timeCell = document.createElement('td');
+          timeCell.className = 'log-time';
+          timeCell.textContent = entry.time || '-';
 
-          if (logsTableBody.children.length > 1) {
+          const methodCell = document.createElement('td');
+          methodCell.className = 'log-method';
+          const methodBadge = document.createElement('span');
+          methodBadge.className = 'log-method-value';
+          methodBadge.textContent = entry.method || '-';
+          methodCell.appendChild(methodBadge);
+
+          const endpointCell = document.createElement('td');
+          endpointCell.className = 'log-endpoint';
+          endpointCell.textContent = entry.endpoint || '-';
+
+          const statusCell = document.createElement('td');
+          statusCell.className = 'log-status';
+          const statusBadge = document.createElement('span');
+          statusBadge.className = getStatusClass(entry.status);
+          statusBadge.textContent = String(entry.status ?? '-');
+          statusCell.appendChild(statusBadge);
+
+          const durationCell = document.createElement('td');
+          durationCell.className = 'log-duration';
+          durationCell.textContent = `${entry.duration ?? '-'}ms`;
+
+          const actionCell = document.createElement('td');
+          const viewDetailsBtn = document.createElement('button');
+          viewDetailsBtn.className = 'btn-view-details';
+          viewDetailsBtn.textContent = '查看详情';
+          actionCell.appendChild(viewDetailsBtn);
+
+          tr.appendChild(timeCell);
+          tr.appendChild(methodCell);
+          tr.appendChild(endpointCell);
+          tr.appendChild(statusCell);
+          tr.appendChild(durationCell);
+          tr.appendChild(actionCell);
+
+          viewDetailsBtn.addEventListener('click', () => showLogDetails(entry));
+
+          const appendToBottom = options.appendToBottom === true;
+
+          if (appendToBottom) {
+              logsTableBody.appendChild(tr);
+          } else if (logsTableBody.children.length > 1) {
               logsTableBody.insertBefore(tr, logsTableBody.children[1]);
           } else {
               logsTableBody.appendChild(tr);
@@ -2456,7 +3139,7 @@
                   messageRow.classList.add('log-message-row');
                   const messageCell = document.createElement('td');
                   messageCell.colSpan = 6; // Assuming there are 6 columns in the table
-                  messageCell.textContent = 'Only the latest 100 logs are being shown.';
+                  messageCell.textContent = '当前仅展示最新 100 条日志。';
                   messageRow.appendChild(messageCell);
                   logsTableBody.appendChild(messageRow);
               }
@@ -2469,19 +3152,7 @@
           }, 500);
       }
 
-      function showLogDetails(time, method, endpoint, status, duration, requestOptions) {
-          logDetailsContent.innerHTML = `
-              <h3>Request Details</h3>
-              <p><strong>Time:</strong> ${time}</p>
-              <p><strong>Method:</strong> ${method}</p>
-              <p><strong>Endpoint:</strong> ${endpoint}</p>
-              <p><strong>Status:</strong> ${status}</p>
-              <p><strong>Duration:</strong> ${duration}ms</p>
-              <p><strong>Request:</strong> <pre>${JSON.stringify(requestOptions[0].requestParams, null, 2)}</pre></p>
-              <p><strong>Response:</strong> <pre>${JSON.stringify(requestOptions[0].response, null, 2)}</pre></p>
-          `;
-          logDetailsModal.style.display = 'block';
-      }
+      loadPersistedLogs();
 
       function incrementLogCounter() {
         if(window.location.pathname != '/public/logs') {

@@ -4,6 +4,10 @@ import { getRuntimeKey } from 'hono/adapter';
 let logId = 0;
 const MAX_RESPONSE_LENGTH = 100000;
 
+function getLogsDir() {
+  return process.env.PORTKEY_LOGS_DIR || 'logs';
+}
+
 // Map to store all connected log clients
 const logClients: Map<string | number, any> = new Map();
 
@@ -14,6 +18,157 @@ const addLogClient = (clientId: any, client: any) => {
 const removeLogClient = (clientId: any) => {
   logClients.delete(clientId);
 };
+
+export function shouldLogRequest(url: string) {
+  try {
+    const { pathname } = new URL(url);
+
+    return ![
+      '/',
+      '/public',
+      '/public/',
+      '/public/logs',
+      '/public/api/local-gateway',
+      '/log/stream',
+      '/favicon.ico',
+    ].some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+  } catch {
+    return !url.includes('/public') && !url.includes('/log/stream');
+  }
+}
+
+export function getDisplayEndpoint(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.pathname}${parsedUrl.search}`;
+  } catch {
+    return url;
+  }
+}
+
+export function getLogsFilename(date = new Date()) {
+  return `${date.toISOString().slice(0, 10)}.jsonl`;
+}
+
+async function getResponsePayload(c: Context, requestOptionsArray: any[] = []) {
+  if (requestOptionsArray[0]?.requestParams?.stream) {
+    return { message: 'The response was a stream.' };
+  }
+
+  try {
+    return await c.res.clone().json();
+  } catch {
+    try {
+      return await c.res.clone().text();
+    } catch {
+      return null;
+    }
+  }
+}
+
+export function truncateResponsePayload(responsePayload: any) {
+  const responseString = JSON.stringify(responsePayload);
+
+  if (responseString.length > MAX_RESPONSE_LENGTH) {
+    return responseString.substring(0, MAX_RESPONSE_LENGTH) + '...';
+  }
+
+  return responsePayload;
+}
+
+export function createLogEntry({
+  time = new Date().toLocaleString(),
+  sourceType,
+  method,
+  endpoint,
+  status,
+  duration,
+  requestOptions = [],
+  response,
+}: {
+  time?: string;
+  sourceType?: 'gateway' | 'mcp';
+  method: string;
+  endpoint: string;
+  status: number;
+  duration: number;
+  requestOptions?: any[];
+  response?: any;
+}) {
+  return {
+    time,
+    sourceType,
+    method,
+    endpoint,
+    status,
+    duration,
+    requestOptions,
+    response,
+  };
+}
+
+export async function persistLogEntry(logEntry: Record<string, any>) {
+  const { appendFile, mkdir } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+
+  const logsDir = getLogsDir();
+  await mkdir(logsDir, { recursive: true });
+  const logFilePath = join(logsDir, getLogsFilename());
+  await appendFile(logFilePath, JSON.stringify(logEntry) + '\n', 'utf8');
+}
+
+export async function readPersistedLogEntries(limit = 100) {
+  const { mkdir, readdir, readFile } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+
+  const logsDir = getLogsDir();
+  await mkdir(logsDir, { recursive: true });
+
+  const logFiles = (await readdir(logsDir))
+    .filter((fileName) => fileName.endsWith('.jsonl'))
+    .sort()
+    .reverse();
+
+  const entries: Record<string, any>[] = [];
+
+  for (const fileName of logFiles) {
+    const fileContent = await readFile(join(logsDir, fileName), 'utf8');
+    const lines = fileContent
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .reverse();
+
+    for (const line of lines) {
+      try {
+        entries.push(JSON.parse(line));
+      } catch {
+        // Ignore malformed log lines so one bad entry doesn't break the UI.
+      }
+
+      if (entries.length >= limit) {
+        return entries.slice(0, limit);
+      }
+    }
+  }
+
+  return entries.slice(0, limit);
+}
+
+export function getLogSourceType(endpoint: string) {
+  return [
+    '/v1/',
+    '/chat/completions',
+    '/completions',
+    '/embeddings',
+    '/responses',
+    '/models',
+  ].some((prefix) => endpoint.startsWith(prefix))
+    ? 'gateway'
+    : 'mcp';
+}
 
 const broadcastLog = async (log: any) => {
   const message = {
@@ -49,39 +204,37 @@ const broadcastLog = async (log: any) => {
 
 async function processLog(c: Context, start: number) {
   const ms = Date.now() - start;
-  if (!c.req.url.includes('/v1/')) return;
+  if (!shouldLogRequest(c.req.url)) return;
 
-  const requestOptionsArray = c.get('requestOptions');
-  if (!requestOptionsArray?.length) {
-    return;
-  }
+  const requestOptionsArray = c.get('requestOptions') ?? [];
 
   try {
-    const response = requestOptionsArray[0].requestParams.stream
-      ? { message: 'The response was a stream.' }
-      : await c.res.clone().json();
+    const responsePayload = truncateResponsePayload(
+      await getResponsePayload(c, requestOptionsArray)
+    );
 
-    const responseString = JSON.stringify(response);
-    if (responseString.length > MAX_RESPONSE_LENGTH) {
-      requestOptionsArray[0].response =
-        responseString.substring(0, MAX_RESPONSE_LENGTH) + '...';
-    } else {
-      requestOptionsArray[0].response = response;
+    if (requestOptionsArray.length) {
+      requestOptionsArray[0].response = responsePayload;
     }
-  } catch (error) {
-    console.error('Error processing log:', error);
-  }
 
-  await broadcastLog(
-    JSON.stringify({
-      time: new Date().toLocaleString(),
+    const logEntry = createLogEntry({
+      sourceType: getLogSourceType(getDisplayEndpoint(c.req.url)),
       method: c.req.method,
-      endpoint: c.req.url.split(':8787')[1],
+      endpoint: getDisplayEndpoint(c.req.url),
       status: c.res.status,
       duration: ms,
       requestOptions: requestOptionsArray,
-    })
-  );
+      response: responsePayload,
+    });
+
+    if (getRuntimeKey() === 'node') {
+      await persistLogEntry(logEntry);
+    }
+
+    await broadcastLog(JSON.stringify(logEntry));
+  } catch (error) {
+    console.error('Error processing log:', error);
+  }
 }
 
 export const logHandler = () => {

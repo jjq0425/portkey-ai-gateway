@@ -1,5 +1,6 @@
 import {
   readLocalGatewayConfig,
+  resolveLocalMcpServer,
   resolveAuthorizationModelAlias,
   resolveLocalGatewayModelAlias,
   validateLocalGatewayToken,
@@ -25,6 +26,17 @@ describe('localGateway config', () => {
           displayName: 'GPT-4o Mini Local',
         },
       },
+      mcpServers: {
+        weather: {
+          routePath: '/mcp1',
+          targetUrl: 'http://127.0.0.1:3010/mcp',
+          displayName: '天气 MCP',
+          description: '测试用 MCP 代理配置',
+          headers: {
+            'x-test-token': 'demo',
+          },
+        },
+      },
     });
   });
 
@@ -40,6 +52,7 @@ describe('localGateway config', () => {
 
     expect(config?.gatewayKeys).toEqual(['pk-local-test']);
     expect(config?.models['gpt-4o-mini-local'].provider).toBe('openrouter');
+    expect(config?.mcpServers.weather.routePath).toBe('/mcp1');
   });
 
   it('resolves a local model alias into provider config', async () => {
@@ -93,5 +106,14 @@ describe('localGateway config', () => {
     expect(resolved?.providerConfig.overrideParams?.model).toBe(
       'openrouter/hunter-alpha'
     );
+  });
+
+  it('resolves configured MCP routes from local gateway config', async () => {
+    const resolved = await resolveLocalMcpServer('/mcp1/tools/list');
+
+    expect(resolved?.alias).toBe('weather');
+    expect(resolved?.routePath).toBe('/mcp1');
+    expect(resolved?.targetUrl).toBe('http://127.0.0.1:3010/mcp');
+    expect(resolved?.headers).toEqual({ 'x-test-token': 'demo' });
   });
 });

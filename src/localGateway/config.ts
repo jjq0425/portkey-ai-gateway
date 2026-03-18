@@ -11,17 +11,35 @@ export interface LocalGatewayModelConfigEntry {
   description?: string;
 }
 
+export interface LocalGatewayMcpConfigEntry {
+  routePath: string;
+  targetUrl: string;
+  displayName?: string;
+  description?: string;
+  headers?: Record<string, string>;
+}
+
 export interface LocalGatewayConfig {
   version: number;
   generatedAt: string;
   gatewayKeys: string[];
   models: Record<string, LocalGatewayModelConfigEntry>;
+  mcpServers: Record<string, LocalGatewayMcpConfigEntry>;
 }
 
 export interface LocalGatewayResolution {
   alias: string;
   providerConfig: Options;
   upstreamModel: string;
+}
+
+export interface LocalGatewayMcpResolution {
+  alias: string;
+  routePath: string;
+  targetUrl: string;
+  displayName?: string;
+  description?: string;
+  headers: Record<string, string>;
 }
 
 const LOCAL_GATEWAY_FILE_ENV = 'LOCAL_GATEWAY_CONFIG_PATH';
@@ -68,6 +86,7 @@ function createDefaultLocalGatewayConfig(): LocalGatewayConfig {
           'Default OpenRouter auto-routing alias for local OpenSDK calls.',
       },
     },
+    mcpServers: {},
   };
 }
 
@@ -99,6 +118,15 @@ async function ensureLocalGatewayConfigFile() {
 function normalizeLocalGatewayConfig(
   config: Partial<LocalGatewayConfig>
 ): LocalGatewayConfig {
+  const normalizeRoutePath = (value: string) => {
+    if (!value) {
+      return '/mcp';
+    }
+
+    const prefixed = value.startsWith('/') ? value : `/${value}`;
+    return prefixed.length > 1 ? prefixed.replace(/\/+$/, '') : prefixed;
+  };
+
   return {
     version: 1,
     generatedAt: config.generatedAt || new Date().toISOString(),
@@ -119,6 +147,18 @@ function normalizeLocalGatewayConfig(
             : {}),
           ...(entry.displayName ? { displayName: entry.displayName } : {}),
           ...(entry.description ? { description: entry.description } : {}),
+        },
+      ])
+    ),
+    mcpServers: Object.fromEntries(
+      Object.entries(config.mcpServers || {}).map(([alias, entry]) => [
+        alias,
+        {
+          routePath: normalizeRoutePath(entry.routePath),
+          targetUrl: entry.targetUrl,
+          ...(entry.displayName ? { displayName: entry.displayName } : {}),
+          ...(entry.description ? { description: entry.description } : {}),
+          ...(entry.headers ? { headers: entry.headers } : {}),
         },
       ])
     ),
@@ -344,6 +384,16 @@ export async function getLocalGatewaySummary(headers?: Record<string, any>) {
       description: modelConfig.description || '',
       providerApiKeyEnv: modelConfig.providerApiKeyEnv || '',
     })),
+    mcpServers: Object.entries(config.mcpServers || {}).map(
+      ([alias, mcpConfig]) => ({
+        alias,
+        routePath: mcpConfig.routePath,
+        targetUrl: mcpConfig.targetUrl,
+        displayName: mcpConfig.displayName || alias,
+        description: mcpConfig.description || '',
+        headers: mcpConfig.headers || {},
+      })
+    ),
   };
 }
 
@@ -355,4 +405,38 @@ export async function validateLocalGatewayToken(headers: Record<string, any>) {
 
   const gatewayKey = getBearerToken(headers);
   return !!gatewayKey && config.gatewayKeys.includes(gatewayKey);
+}
+
+function trimTrailingSlash(value: string) {
+  return value.length > 1 ? value.replace(/\/+$/, '') : value;
+}
+
+export async function resolveLocalMcpServer(
+  requestPath: string
+): Promise<LocalGatewayMcpResolution | null> {
+  const config = await readLocalGatewayConfig();
+  if (!config) {
+    return null;
+  }
+
+  const normalizedRequestPath = trimTrailingSlash(requestPath || '/');
+
+  for (const [alias, entry] of Object.entries(config.mcpServers || {})) {
+    const routePath = trimTrailingSlash(entry.routePath);
+    if (
+      normalizedRequestPath === routePath ||
+      normalizedRequestPath.startsWith(`${routePath}/`)
+    ) {
+      return {
+        alias,
+        routePath,
+        targetUrl: entry.targetUrl,
+        displayName: entry.displayName,
+        description: entry.description,
+        headers: entry.headers || {},
+      };
+    }
+  }
+
+  return null;
 }
