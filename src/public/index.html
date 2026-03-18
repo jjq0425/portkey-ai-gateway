@@ -6,6 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portkey AI Gateway</title>
   <style>
+    :root {
+      --bg-page: #f6f8fa;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f6f8fa;
+      --bg-muted: #f3f4f6;
+      --border-default: #d0d7de;
+      --border-muted: #d8dee4;
+      --text-primary: #1f2328;
+      --text-secondary: #59636e;
+      --text-muted: #6e7781;
+      --accent: #24292f;
+      --accent-soft: #eef1f4;
+      --accent-border: #c7d0d9;
+      --success: #1a7f37;
+      --danger: #cf222e;
+      --shadow-sm: 0 1px 2px rgba(31, 35, 40, 0.04);
+      --shadow-md: 0 8px 24px rgba(140, 149, 159, 0.15);
+      --radius-md: 12px;
+      --radius-lg: 16px;
+    }
+
     /* buttons.css */
     /* Buttons */
     .btn {
@@ -17,29 +38,31 @@
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
-      background: linear-gradient(135deg, #6d5efc 0%, #22d3ee 100%);
-      color: white;
-      border: 0px;
+      transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid var(--accent);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25);
+      box-shadow: var(--shadow-sm);
     }
 
     .btn:hover {
       transform: translateY(-1px);
-      box-shadow: 0 16px 38px rgba(34, 211, 238, 0.24);
+      background: #1f2328;
+      box-shadow: 0 4px 12px rgba(31, 35, 40, 0.12);
     }
 
     .btn-outline {
-      border: 1px solid rgba(96, 165, 250, 0.35);
-      background: rgba(255, 255, 255, 0.88);
-      color: #1d4ed8;
-      box-shadow: none;
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: var(--shadow-sm);
     }
 
     .btn-outline:hover {
-      background: rgba(239, 246, 255, 0.98);
+      background: var(--bg-subtle);
+      border-color: var(--accent-border);
     }
 
     /* Loading state */
@@ -78,8 +101,9 @@
     /* Header styles */
     header {
       background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 12px 40px rgba(148, 163, 184, 0.18);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(208, 215, 222, 0.85);
+      box-shadow: 0 1px 0 rgba(208, 215, 222, 0.4);
       padding: 0.75rem 0;
       position: fixed;
       top: 0;
@@ -136,13 +160,13 @@
     }
 
     .header-links a {
-      color: #7dd3fc;
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 0.875rem;
     }
 
     .header-links a:hover {
-      color: #bae6fd;
+      color: var(--text-primary);
     }
 
     /* Responsive adjustments */
@@ -281,8 +305,8 @@
     .dialog-overlay {
       position: fixed;
       inset: 0;
-      background-color: rgba(226, 232, 240, 0.72);
-      backdrop-filter: blur(8px);
+      background-color: rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(6px);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -290,13 +314,13 @@
     }
 
     .dialog {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
-      border: 1px solid rgba(191, 219, 254, 0.9);
-      border-radius: 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
       padding: 1.5rem;
       width: 90%;
       max-width: 500px;
-      box-shadow: 0 24px 60px rgba(148, 163, 184, 0.2);
+      box-shadow: var(--shadow-md);
     }
 
     .dialog h3 {
@@ -308,7 +332,7 @@
 
     .dialog p {
       font-size: 0.875rem;
-      color: #64748b;
+      color: var(--text-secondary);
       margin-bottom: 1rem;
       margin-top: 0;
     }
@@ -320,11 +344,11 @@
     .select {
       width: 100%;
       padding: 0.5rem;
-      border: 1px solid rgba(148, 163, 184, 0.2);
+      border: 1px solid var(--border-default);
       border-radius: 0.375rem;
       appearance: none;
-      background-color: rgba(255, 255, 255, 0.92);
-      color: #0f172a;
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
       background-position: right 0.5rem center;
       background-repeat: no-repeat;
@@ -335,11 +359,11 @@
     .input {
       width: 90%;
       padding: 0.5rem;
-      border: 1px solid rgba(148, 163, 184, 0.2);
+      border: 1px solid var(--border-default);
       border-radius: 0.375rem;
       margin-bottom: 0.5rem;
-      background: rgba(255, 255, 255, 0.92);
-      color: #0f172a;
+      background: var(--bg-surface);
+      color: var(--text-primary);
     }
 
     .dialog label {
@@ -379,12 +403,66 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .logs-header-main {
+      flex: 1 1 320px;
+      min-width: 0;
+    }
+
+    .logs-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .logs-refresh-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid var(--border-default);
+      border-radius: 999px;
+      background: var(--bg-subtle);
+    }
+
+    .logs-refresh-group label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .logs-refresh-input {
+      width: 88px;
+      padding: 0.45rem 0.6rem;
+      border: 1px solid var(--border-default);
+      border-radius: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+    }
+
+    .logs-refresh-hint {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .logs-auto-status {
+      min-height: 1.2rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
     }
 
     .logs-table-container {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
       width: 100%;
       max-width: 1100px;
@@ -400,21 +478,21 @@
     .logs-table td {
       padding: 0.75rem;
       text-align: left;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid var(--border-muted);
       cursor: default;
     }
 
     .logs-table th {
-      background-color: #f3f4f6;
+      background-color: var(--bg-subtle);
       font-weight: 600;
-      color: #374151;
+      color: var(--text-secondary);
       text-transform: uppercase;
       font-size: 12px;
       letter-spacing: 0.05em;
     }
 
     .logs-table tr:hover {
-      background-color: #f3f4f6;
+      background-color: #fafbfc;
     }
 
     /* .logs-table td:last-child {
@@ -422,8 +500,8 @@
     } */
 
     .loading-row {
-      background-color: #f3f4f6;
-      color: #6b7280;
+      background-color: var(--bg-subtle);
+      color: var(--text-muted);
       font-style: italic;
     }
 
@@ -435,7 +513,7 @@
       display: inline-block;
       width: 12px;
       height: 12px;
-      border: 2px solid #6b7280;
+      border: 2px solid var(--text-muted);
       border-radius: 50%;
       border-top-color: transparent;
       animation: spin 1s linear infinite;
@@ -476,17 +554,17 @@
 
     .log-status span.success {
       padding: 0.3rem;
-      background-color: green;
+      background-color: rgba(26, 127, 55, 0.12);
       border-radius: 4px;
-      color: white;
+      color: var(--success);
       font-weight: 700;
     }
 
     .log-status span.error {
       padding: 0.3rem;
-      background-color: red;
+      background-color: rgba(207, 34, 46, 0.12);
       border-radius: 4px;
-      color: white;
+      color: var(--danger);
       font-weight: 700;
     }
 
@@ -494,16 +572,16 @@
 
     .btn-view-details {
       padding: 0.25rem 0.5rem;
-      background-color: #3b82f6;
-      color: white;
-      border: none;
+      background-color: var(--bg-surface);
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
       border-radius: 0.25rem;
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
 
     .btn-view-details:hover {
-      background-color: #2563eb;
+      background-color: var(--bg-subtle);
     }
 
     /* Responsive adjustments */
@@ -511,6 +589,10 @@
       .logs-header {
           flex-direction: column;
           align-items: stretch;
+      }
+
+      .logs-toolbar {
+          justify-content: flex-start;
       }
 
       .logs-search {
@@ -533,17 +615,17 @@
     }
 
     .modal-content {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.99) 0%, rgba(241, 245, 249, 0.96) 100%);
+      background: var(--bg-surface);
       margin: 0 0 0 auto;
       padding: 2rem 2rem 3rem 2rem;
       border-radius: 1.25rem 0 0 1.25rem;
       width: min(56vw, 860px);
       min-width: 420px;
       max-width: 860px;
-      box-shadow: -16px 0 48px rgba(15, 23, 42, 0.16);
+      box-shadow: -16px 0 48px rgba(31, 35, 40, 0.12);
       height: 100vh;
       overflow-y: auto;
-      border-left: 1px solid rgba(191, 219, 254, 0.8);
+      border-left: 1px solid var(--border-default);
     }
 
     .close {
@@ -771,16 +853,13 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(34, 211, 238, 0.14), transparent 32%),
-        radial-gradient(circle at top right, rgba(109, 94, 252, 0.12), transparent 28%),
-        linear-gradient(180deg, #f8fbff 0%, #eef5ff 52%, #e2ecff 100%);
-      color: #1e293b;
+      background: linear-gradient(180deg, #ffffff 0%, var(--bg-page) 100%);
+      color: var(--text-primary);
       margin-top: 4rem;
     }
 
     a {
-      color: #2563eb;
+      color: #0969da;
       text-decoration: none;
     }
 
@@ -821,14 +900,13 @@
     }
 
     .card {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      border-radius: 1rem;
-      box-shadow: 0 24px 64px rgba(148, 163, 184, 0.2);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
       padding: 1.5rem;
       max-width: 600px;
-        margin: 0rem auto 2rem auto;
-      backdrop-filter: blur(18px);
+      margin: 0rem auto 2rem auto;
     }
 
     .left-column .card {
@@ -860,12 +938,12 @@
       font-size: 1.125rem;
       font-weight: bold;
       margin: 0;
-      color: #0f172a;
+      color: var(--text-primary);
     }
 
     .card-subtitle {
       font-size: 0.875rem;
-      color: #64748b;
+      color: var(--text-secondary);
       margin-bottom: 1rem;
     }
 
@@ -997,30 +1075,31 @@
     }
 
     .docs-link a {
-      color: #3b82f6;
+      color: #0969da;
     }
 
     /* tabs.css */
     /* Tabs styles */
     .tabs-container {
       display: flex;
-      background: rgba(255, 255, 255, 0.88);
+      background: var(--bg-surface);
       padding: 0.25rem;
       border-radius: 999px;
-      color: #64748b;
-      border: 1px solid rgba(191, 219, 254, 0.9);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+      box-shadow: var(--shadow-sm);
     }
 
     .tab-button:hover {
-      color: #0f172a;
+      color: var(--text-primary);
+      background: var(--accent-soft);
     }
 
     .tab-button.active {
-      color: #0f172a;
-      /* border-bottom-color: #3b82f6; */
-      background: linear-gradient(135deg, rgba(109, 94, 252, 0.16), rgba(34, 211, 238, 0.18));
+      color: var(--text-primary);
+      background: var(--accent-soft);
       font-weight: 500;
-      box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.25);
+      box-shadow: inset 0 0 0 1px var(--accent-border);
     }
 
     .tabs-container .tab-button {
@@ -1053,7 +1132,7 @@
       cursor: pointer;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #64748b;
+      color: var(--text-secondary);
       transition: all 0.3s ease;
       border-radius: 0.375rem;
       /* margin-right: 0.5rem; */
@@ -1072,9 +1151,9 @@
     }
 
     .tab.active {
-      border-bottom-color: #3b82f6;
+      border-bottom-color: #0969da;
       font-weight: bold;
-      color: #0f172a;
+      color: var(--text-primary);
     }
 
     .eyebrow {
@@ -1084,24 +1163,13 @@
       font-size: 0.72rem;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #0284c7;
+      color: var(--text-muted);
       margin-bottom: 0.5rem;
     }
 
     .local-gateway-card {
       max-width: 900px;
       position: relative;
-      overflow: hidden;
-    }
-
-    .local-gateway-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(120deg, rgba(109, 94, 252, 0.1), transparent 48%),
-        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 32%);
-      pointer-events: none;
     }
 
     .local-gateway-header,
@@ -1123,9 +1191,9 @@
     .local-gateway-pill {
       padding: 0.45rem 0.8rem;
       border-radius: 999px;
-      border: 1px solid rgba(96, 165, 250, 0.25);
-      background: rgba(255, 255, 255, 0.86);
-      color: #0f766e;
+      border: 1px solid var(--border-default);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
       font-size: 0.72rem;
       letter-spacing: 0.16em;
       text-transform: uppercase;
@@ -1141,27 +1209,28 @@
 
     .local-gateway-panel,
     .alias-item {
-      background: rgba(255, 255, 255, 0.84);
-      border: 1px solid rgba(191, 219, 254, 0.9);
-      border-radius: 0.85rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md);
       padding: 1rem;
+      box-shadow: var(--shadow-sm);
     }
 
     .panel-label,
     .alias-meta {
-      color: #64748b;
+      color: var(--text-secondary);
       font-size: 0.8rem;
     }
 
     .panel-value {
-      color: #0f172a;
+      color: var(--text-primary);
       font-size: 1rem;
       font-weight: 600;
       margin: 0.35rem 0;
     }
 
     .panel-meta {
-      color: #0284c7;
+      color: var(--text-muted);
       font-size: 0.82rem;
       word-break: break-all;
     }
@@ -1201,7 +1270,7 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       align-items: center;
-      color: #0f172a;
+      color: var(--text-primary);
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
@@ -1209,16 +1278,16 @@
     .alias-chip {
       border-radius: 999px;
       padding: 0.2rem 0.55rem;
-      background: rgba(224, 242, 254, 0.9);
-      color: #0369a1;
-      border: 1px solid rgba(125, 211, 252, 0.55);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.1em;
     }
 
     .alias-empty {
-      color: #64748b;
+      color: var(--text-secondary);
       padding: 1rem 0;
       text-align: center;
     }
@@ -1231,7 +1300,7 @@
     }
 
     .dialog-description {
-      color: #64748b;
+      color: var(--text-secondary);
       font-size: 0.875rem;
     }
 
@@ -1243,9 +1312,9 @@
     }
 
     .icon-button {
-      border: 1px solid rgba(148, 163, 184, 0.16);
-      background: rgba(255, 255, 255, 0.9);
-      color: #0f172a;
+      border: 1px solid var(--border-default);
+      background: var(--bg-surface);
+      color: var(--text-primary);
       border-radius: 999px;
       width: 2rem;
       height: 2rem;
@@ -1263,7 +1332,7 @@
 
     .admin-shell {
       max-width: 1080px;
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96));
+      background: var(--bg-surface);
     }
 
     .admin-page-header {
@@ -1296,10 +1365,10 @@
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 1rem;
       padding: 1.1rem 1.15rem;
-      border: 1px solid rgba(191, 219, 254, 0.9);
-      border-radius: 1rem;
-      background: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      box-shadow: var(--shadow-sm);
     }
 
     .management-item-title {
@@ -1309,12 +1378,12 @@
       gap: 0.5rem;
       margin-bottom: 0.35rem;
       font-weight: 700;
-      color: #0f172a;
+      color: var(--text-primary);
     }
 
     .management-item-meta {
       font-size: 0.84rem;
-      color: #64748b;
+      color: var(--text-secondary);
       margin-top: 0.2rem;
       word-break: break-word;
     }
@@ -1327,20 +1396,20 @@
       font-size: 0.72rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      background: rgba(224, 242, 254, 0.95);
-      color: #0369a1;
-      border: 1px solid rgba(125, 211, 252, 0.55);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
     }
 
     .page-message {
       min-height: 1.25rem;
       margin: 0.4rem 0 1rem 0;
-      color: #0f766e;
+      color: var(--success);
       font-size: 0.9rem;
     }
 
     .page-message.error {
-      color: #b91c1c;
+      color: var(--danger);
     }
 
     .btn-small {
@@ -1357,20 +1426,13 @@
     .key-value {
       font-size: 0.95rem;
       word-break: break-all;
-      color: #0f172a;
+      color: var(--text-primary);
       font-weight: 600;
       margin-bottom: 0.25rem;
     }
 
     .danger-text {
-      color: #b91c1c;
-    }
-
-    .logs-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
+      color: var(--danger);
     }
 
     @media (max-width: 768px) {
@@ -1754,11 +1816,21 @@
       <div class="card logs-card">
         <h2>实时日志</h2>
         <div class="logs-header">
-          <div>
+          <div class="logs-header-main">
             <div class="card-subtitle" style="margin:0;">可查看实时请求，支持一键清空历史日志。</div>
+            <div class="logs-auto-status" id="logsAutoRefreshStatus">自动刷新已关闭，实时日志流仍会持续推送新请求。</div>
             <div id="logsPageMessage" class="page-message"></div>
           </div>
-          <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+          <div class="logs-toolbar">
+            <button class="btn btn-outline" id="refreshLogsBtn">立即刷新</button>
+            <div class="logs-refresh-group">
+              <label for="logsAutoRefreshToggle">自动刷新</label>
+              <input type="checkbox" id="logsAutoRefreshToggle">
+              <input type="number" id="logsAutoRefreshIntervalInput" class="logs-refresh-input" min="5" step="1" value="30">
+              <span class="logs-refresh-hint">秒</span>
+            </div>
+            <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+          </div>
         </div>
         <div class="logs-table-container">
           <table class="logs-table">
@@ -3206,6 +3278,13 @@
       function mainTabFocus(tabName) {
         if(tabName === 'logs') {
           resetLogCounter();
+          syncLogsAutoRefreshTimer();
+        } else {
+          stopLogsAutoRefresh();
+        }
+
+        if (['main', 'models', 'mcp', 'keys'].includes(tabName)) {
+          fetchLocalGatewaySummary();
         }
         tabButtons.forEach(btn => btn.classList.remove('active'));
         tabContents.forEach(content => content.classList.remove('active'));
@@ -3227,19 +3306,19 @@
         mainTabFocus(currentTab);
       }
 
-      window.addEventListener('popstate', () => {
-        managePage()
-      });
-
-      managePage()
-
       // Logs functionality
       const logsTableBody = document.getElementById('logsTableBody');
       const logDetailsModal = document.getElementById('logDetailsModal');
       const logDetailsContent = document.getElementById('logDetailsContent');
       const closeModal = document.querySelector('.close');
       const clearLogsBtn = document.querySelector('.btn-clear-logs');
+      const refreshLogsBtn = document.getElementById('refreshLogsBtn');
+      const logsAutoRefreshToggle = document.getElementById('logsAutoRefreshToggle');
+      const logsAutoRefreshIntervalInput = document.getElementById('logsAutoRefreshIntervalInput');
+      const logsAutoRefreshStatus = document.getElementById('logsAutoRefreshStatus');
       const renderedLogKeys = new Set();
+      const DEFAULT_LOG_REFRESH_INTERVAL_SECONDS = 30;
+      let logRefreshTimer = null;
 
       // SSE for the logs
       let logSource;
@@ -3303,8 +3382,66 @@
         renderLogsLoadingState(message);
       }
 
-      async function loadPersistedLogs() {
-        resetRenderedLogs();
+      function sanitizeRefreshInterval(value) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+          return DEFAULT_LOG_REFRESH_INTERVAL_SECONDS;
+        }
+
+        return Math.max(5, Math.floor(parsed));
+      }
+
+      function getLogRefreshIntervalMs() {
+        const seconds = sanitizeRefreshInterval(logsAutoRefreshIntervalInput?.value);
+        if (logsAutoRefreshIntervalInput) {
+          logsAutoRefreshIntervalInput.value = String(seconds);
+        }
+        return seconds * 1000;
+      }
+
+      function updateLogsAutoRefreshStatus(message) {
+        if (logsAutoRefreshStatus) {
+          logsAutoRefreshStatus.textContent = message;
+        }
+      }
+
+      function stopLogsAutoRefresh() {
+        if (logRefreshTimer) {
+          window.clearInterval(logRefreshTimer);
+          logRefreshTimer = null;
+        }
+      }
+
+      function syncLogsAutoRefreshTimer() {
+        stopLogsAutoRefresh();
+
+        const intervalMs = getLogRefreshIntervalMs();
+        const intervalSeconds = intervalMs / 1000;
+
+        if (!logsAutoRefreshToggle?.checked) {
+          updateLogsAutoRefreshStatus('自动刷新已关闭，实时日志流仍会持续推送新请求。');
+          return;
+        }
+
+        logRefreshTimer = window.setInterval(() => {
+          loadPersistedLogs({
+            message: `正在刷新最近 100 条日志（每 ${intervalSeconds} 秒）...`,
+            successMessage: `已自动刷新日志（间隔 ${intervalSeconds} 秒）。`,
+            skipPageMessage: true,
+          });
+        }, intervalMs);
+
+        updateLogsAutoRefreshStatus(`自动刷新已开启，每 ${intervalSeconds} 秒同步一次最近 100 条日志。`);
+      }
+
+      async function loadPersistedLogs(options = {}) {
+        const {
+          message = '正在监听日志...',
+          successMessage = '',
+          skipPageMessage = true,
+        } = options;
+
+        resetRenderedLogs(message);
 
         try {
           const response = await fetch('/public/api/logs?limit=100');
@@ -3313,7 +3450,12 @@
           (payload.logs || []).slice().reverse().forEach(entry => {
             addLogEntry(entry, { appendToBottom: true });
           });
+
+          if (!skipPageMessage && successMessage) {
+            showPageMessage(logsPageMessage, successMessage);
+          }
         } catch (error) {
+          showPageMessage(logsPageMessage, '刷新日志失败。', 'error');
           console.error('Failed to hydrate persisted logs', error);
         }
       }
@@ -3664,6 +3806,20 @@
 
       loadPersistedLogs();
       clearLogsBtn.addEventListener('click', clearLogs);
+      refreshLogsBtn.addEventListener('click', () => {
+        loadPersistedLogs({
+          message: '正在手动刷新日志...',
+          successMessage: '日志已刷新。',
+          skipPageMessage: false,
+        });
+      });
+      logsAutoRefreshToggle.addEventListener('change', syncLogsAutoRefreshTimer);
+      logsAutoRefreshIntervalInput.addEventListener('change', syncLogsAutoRefreshTimer);
+      logsAutoRefreshIntervalInput.addEventListener('blur', syncLogsAutoRefreshTimer);
+      window.addEventListener('popstate', () => {
+        managePage();
+      });
+      managePage();
 
       function incrementLogCounter() {
         if(window.location.pathname != '/public/logs') {
