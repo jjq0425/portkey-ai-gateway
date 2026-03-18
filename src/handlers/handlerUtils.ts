@@ -511,8 +511,8 @@ export async function tryTargetsRecursively(
       ? { ...currentTarget.cache }
       : { ...inheritedConfig.cache },
     requestTimeout: null,
-    defaultInputGuardrails: inheritedConfig.defaultInputGuardrails,
-    defaultOutputGuardrails: inheritedConfig.defaultOutputGuardrails,
+    defaultInputGuardrails: inheritedConfig.defaultInputGuardrails || [],
+    defaultOutputGuardrails: inheritedConfig.defaultOutputGuardrails || [],
   };
 
   // Inherited config can be empty only for the base case of recursive call.

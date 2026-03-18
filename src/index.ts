@@ -101,6 +101,7 @@ if (getRuntimeKey() === 'node') {
 
 // Support the /v1/models endpoint
 app.get('/v1/models', modelsHandler);
+app.get('/models', modelsHandler);
 
 // Use hooks middleware for all routes
 app.use('*', hooks);
@@ -145,18 +146,21 @@ app.post(
  * Handles requests by passing them to the chatCompletionsHandler.
  */
 app.post('/v1/chat/completions', requestValidator, chatCompletionsHandler);
+app.post('/chat/completions', requestValidator, chatCompletionsHandler);
 
 /**
  * POST route for '/v1/completions'.
  * Handles requests by passing them to the completionsHandler.
  */
 app.post('/v1/completions', requestValidator, completionsHandler);
+app.post('/completions', requestValidator, completionsHandler);
 
 /**
  * POST route for '/v1/embeddings'.
  * Handles requests by passing them to the embeddingsHandler.
  */
 app.post('/v1/embeddings', requestValidator, embeddingsHandler);
+app.post('/embeddings', requestValidator, embeddingsHandler);
 
 /**
  * POST route for '/v1/images/generations'.
@@ -236,8 +240,18 @@ app.post(
   requestValidator,
   modelResponsesHandler('createModelResponse', 'POST')
 );
+app.post(
+  '/responses',
+  requestValidator,
+  modelResponsesHandler('createModelResponse', 'POST')
+);
 app.get(
   '/v1/responses/:id',
+  requestValidator,
+  modelResponsesHandler('getModelResponse', 'GET')
+);
+app.get(
+  '/responses/:id',
   requestValidator,
   modelResponsesHandler('getModelResponse', 'GET')
 );
@@ -246,8 +260,18 @@ app.delete(
   requestValidator,
   modelResponsesHandler('deleteModelResponse', 'DELETE')
 );
+app.delete(
+  '/responses/:id',
+  requestValidator,
+  modelResponsesHandler('deleteModelResponse', 'DELETE')
+);
 app.get(
   '/v1/responses/:id/input_items',
+  requestValidator,
+  modelResponsesHandler('listResponseInputItems', 'GET')
+);
+app.get(
+  '/responses/:id/input_items',
   requestValidator,
   modelResponsesHandler('listResponseInputItems', 'GET')
 );
