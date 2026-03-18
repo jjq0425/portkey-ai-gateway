@@ -1261,6 +1261,126 @@
       resize: vertical;
     }
 
+    .admin-shell {
+      max-width: 1080px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.96));
+    }
+
+    .admin-page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .admin-actions,
+    .management-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .admin-summary-grid {
+      margin-bottom: 1rem;
+    }
+
+    .management-list {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .management-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 1rem;
+      padding: 1.1rem 1.15rem;
+      border: 1px solid rgba(191, 219, 254, 0.9);
+      border-radius: 1rem;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+    }
+
+    .management-item-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.35rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .management-item-meta {
+      font-size: 0.84rem;
+      color: #64748b;
+      margin-top: 0.2rem;
+      word-break: break-word;
+    }
+
+    .management-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(224, 242, 254, 0.95);
+      color: #0369a1;
+      border: 1px solid rgba(125, 211, 252, 0.55);
+    }
+
+    .page-message {
+      min-height: 1.25rem;
+      margin: 0.4rem 0 1rem 0;
+      color: #0f766e;
+      font-size: 0.9rem;
+    }
+
+    .page-message.error {
+      color: #b91c1c;
+    }
+
+    .btn-small {
+      padding: 0.48rem 0.8rem;
+      border-radius: 0.7rem;
+      font-size: 0.82rem;
+    }
+
+    .key-grid {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .key-value {
+      font-size: 0.95rem;
+      word-break: break-all;
+      color: #0f172a;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .danger-text {
+      color: #b91c1c;
+    }
+
+    .logs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .admin-page-header,
+      .management-item {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+    }
+
     @media (max-width: 768px) {
       .local-gateway-header,
       .local-alias-toolbar,
@@ -1305,8 +1425,11 @@
           </div>
       </div>
       <nav class="tabs-container">
-        <button class="tab-button active" data-tab="main" id="main-tab-button">Gateway</button>
-        <button class="tab-button" data-tab="logs" id="logs-tab-button">Logs<span class="badge">1</span></button>
+        <button class="tab-button active" data-route="/public/" data-tab="main" id="main-tab-button">Gateway</button>
+        <button class="tab-button" data-route="/public/models" data-tab="models" id="models-tab-button">Models</button>
+        <button class="tab-button" data-route="/public/mcp" data-tab="mcp" id="mcp-tab-button">MCP</button>
+        <button class="tab-button" data-route="/public/keys" data-tab="keys" id="keys-tab-button">Keys</button>
+        <button class="tab-button" data-route="/public/logs" data-tab="logs" id="logs-tab-button">Logs<span class="badge">1</span></button>
       </nav>
       <a class="github-button" href="https://github.com/portkey-ai/gateway"
               data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-star" data-size="large"
@@ -1352,7 +1475,7 @@
             <button class="btn btn-outline" id="copyGatewayKeyBtn">复制网关密钥</button>
             <button class="btn btn-outline" id="copyGatewayConfigBtn">复制配置路径</button>
           </div>
-          <button class="btn" id="addAliasBtn">新增模型别名</button>
+          <button class="btn" id="openModelsPageBtn">管理 Models</button>
         </div>
         <div class="alias-list" id="localAliasList">
           <div class="alias-empty">暂无模型别名配置。</div>
@@ -1366,7 +1489,7 @@
                 例如把 <code>/mcp1</code> 映射到任意 MCP Server URL，并在日志中统一监控。
               </div>
             </div>
-            <button class="btn" id="addMcpBtn">新增 MCP 路由</button>
+            <button class="btn" id="openMcpPageBtn">管理 MCP</button>
           </div>
           <div class="alias-meta" id="localGatewayMcpCount" style="margin-bottom:0.75rem;">0 个 MCP 路由</div>
           <div class="mcp-list" id="localMcpList">
@@ -1531,12 +1654,111 @@
       </div>
     </div>
 
+    <div id="models-tab" class="main-tab-content">
+      <div class="card admin-shell">
+        <div class="admin-page-header">
+          <div>
+            <div class="eyebrow">MODEL ADMIN</div>
+            <h2>Model 配置管理</h2>
+            <div class="card-subtitle">独立页面集中维护模型别名，可新增、编辑、删除，界面风格更接近后台管理台。</div>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-outline" id="modelsBackBtn">返回 Gateway</button>
+            <button class="btn" id="addAliasPageBtn">新增 Model</button>
+          </div>
+        </div>
+        <div class="local-gateway-grid admin-summary-grid">
+          <div class="local-gateway-panel">
+            <div class="panel-label">当前别名数</div>
+            <div class="panel-value" id="modelsAdminCount">0</div>
+            <div class="panel-meta">每个别名对应一个 provider 与 upstream model。</div>
+          </div>
+          <div class="local-gateway-panel">
+            <div class="panel-label">默认 Gateway Key</div>
+            <div class="panel-value mono" id="modelsAdminKey">加载中…</div>
+            <div class="panel-meta">用于本地别名调用与联调。</div>
+          </div>
+        </div>
+        <div id="modelsPageMessage" class="page-message"></div>
+        <div class="management-list" id="modelsAdminList">
+          <div class="alias-empty">暂无模型别名配置。</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="mcp-tab" class="main-tab-content">
+      <div class="card admin-shell">
+        <div class="admin-page-header">
+          <div>
+            <div class="eyebrow">MCP ADMIN</div>
+            <h2>MCP 路由管理</h2>
+            <div class="card-subtitle">单独页面维护 MCP 映射，可编辑代理路由、目标地址与附加请求头。</div>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-outline" id="mcpBackBtn">返回 Gateway</button>
+            <button class="btn" id="addMcpPageBtn">新增 MCP</button>
+          </div>
+        </div>
+        <div class="local-gateway-grid admin-summary-grid">
+          <div class="local-gateway-panel">
+            <div class="panel-label">MCP 路由数</div>
+            <div class="panel-value" id="mcpAdminCount">0</div>
+            <div class="panel-meta">所有路由会纳入统一日志监控。</div>
+          </div>
+          <div class="local-gateway-panel">
+            <div class="panel-label">配置文件路径</div>
+            <div class="panel-value mono" id="mcpAdminPath">加载中…</div>
+            <div class="panel-meta">编辑结果会写入本地配置文件。</div>
+          </div>
+        </div>
+        <div id="mcpPageMessage" class="page-message"></div>
+        <div class="management-list" id="mcpAdminList">
+          <div class="alias-empty">暂无 MCP 路由配置。</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="keys-tab" class="main-tab-content">
+      <div class="card admin-shell">
+        <div class="admin-page-header">
+          <div>
+            <div class="eyebrow">KEY ADMIN</div>
+            <h2>PK / Gateway Keys 管理</h2>
+            <div class="card-subtitle">支持生成多个本地 pk，便于团队分发、轮换与停用。</div>
+          </div>
+          <div class="admin-actions">
+            <button class="btn btn-outline" id="keysBackBtn">返回 Gateway</button>
+            <button class="btn" id="generateGatewayKeyBtn">生成新的 PK</button>
+          </div>
+        </div>
+        <div class="local-gateway-grid admin-summary-grid">
+          <div class="local-gateway-panel">
+            <div class="panel-label">Key 数量</div>
+            <div class="panel-value" id="keysAdminCount">0</div>
+            <div class="panel-meta">至少保留 1 个可用 Gateway Key。</div>
+          </div>
+          <div class="local-gateway-panel">
+            <div class="panel-label">默认 Key</div>
+            <div class="panel-value mono" id="keysAdminDefault">加载中…</div>
+            <div class="panel-meta">第一枚 key 视为默认 key。</div>
+          </div>
+        </div>
+        <div id="keysPageMessage" class="page-message"></div>
+        <div class="management-list" id="gatewayKeysList">
+          <div class="alias-empty">暂无可用 Gateway Key。</div>
+        </div>
+      </div>
+    </div>
+
     <div id="logs-tab" class="main-tab-content">
       <div class="card logs-card">
         <h2>实时日志</h2>
         <div class="logs-header">
-          <!-- <input type="text" class="logs-search" placeholder="Search logs..."> -->
-          <!-- <button class="btn btn-clear-logs">Clear Logs</button> -->
+          <div>
+            <div class="card-subtitle" style="margin:0;">可查看实时请求，支持一键清空历史日志。</div>
+            <div id="logsPageMessage" class="page-message"></div>
+          </div>
+          <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
         </div>
         <div class="logs-table-container">
           <table class="logs-table">
@@ -1639,8 +1861,12 @@
           <label for="aliasUpstreamModelInput">Upstream model</label>
           <input type="text" id="aliasUpstreamModelInput" class="input" placeholder="openai/gpt-4o-mini">
 
-          <label for="aliasApiKeyEnvInput">Provider API key env</label>
+          <label for="aliasProviderApiKeyInput">Provider API key（可选）</label>
+          <input type="password" id="aliasProviderApiKeyInput" class="input" placeholder="sk-... 或其他 provider key">
+
+          <label for="aliasApiKeyEnvInput">Provider API key env（可选）</label>
           <input type="text" id="aliasApiKeyEnvInput" class="input" placeholder="OPENROUTER_API_KEY">
+          <div class="dialog-description">Provider API key 与 env 二选一即可，请勿同时填写。</div>
 
           <label for="aliasDescriptionInput">Description</label>
           <textarea id="aliasDescriptionInput" class="input textarea-input" placeholder="Friendly description for your alias"></textarea>
@@ -2183,8 +2409,27 @@
       const localMcpList = document.getElementById('localMcpList');
       const copyGatewayKeyBtn = document.getElementById('copyGatewayKeyBtn');
       const copyGatewayConfigBtn = document.getElementById('copyGatewayConfigBtn');
-      const addAliasBtn = document.getElementById('addAliasBtn');
-      const addMcpBtn = document.getElementById('addMcpBtn');
+      const openModelsPageBtn = document.getElementById('openModelsPageBtn');
+      const openMcpPageBtn = document.getElementById('openMcpPageBtn');
+      const modelsBackBtn = document.getElementById('modelsBackBtn');
+      const mcpBackBtn = document.getElementById('mcpBackBtn');
+      const keysBackBtn = document.getElementById('keysBackBtn');
+      const addAliasPageBtn = document.getElementById('addAliasPageBtn');
+      const addMcpPageBtn = document.getElementById('addMcpPageBtn');
+      const generateGatewayKeyBtn = document.getElementById('generateGatewayKeyBtn');
+      const modelsAdminList = document.getElementById('modelsAdminList');
+      const mcpAdminList = document.getElementById('mcpAdminList');
+      const gatewayKeysList = document.getElementById('gatewayKeysList');
+      const modelsAdminCount = document.getElementById('modelsAdminCount');
+      const modelsAdminKey = document.getElementById('modelsAdminKey');
+      const mcpAdminCount = document.getElementById('mcpAdminCount');
+      const mcpAdminPath = document.getElementById('mcpAdminPath');
+      const keysAdminCount = document.getElementById('keysAdminCount');
+      const keysAdminDefault = document.getElementById('keysAdminDefault');
+      const modelsPageMessage = document.getElementById('modelsPageMessage');
+      const mcpPageMessage = document.getElementById('mcpPageMessage');
+      const keysPageMessage = document.getElementById('keysPageMessage');
+      const logsPageMessage = document.getElementById('logsPageMessage');
       const aliasDialog = document.getElementById('aliasDialog');
       const mcpDialog = document.getElementById('mcpDialog');
       const closeAliasDialog = document.getElementById('closeAliasDialog');
@@ -2198,6 +2443,7 @@
       const aliasNameInput = document.getElementById('aliasNameInput');
       const aliasProviderSelect = document.getElementById('aliasProviderSelect');
       const aliasUpstreamModelInput = document.getElementById('aliasUpstreamModelInput');
+      const aliasProviderApiKeyInput = document.getElementById('aliasProviderApiKeyInput');
       const aliasApiKeyEnvInput = document.getElementById('aliasApiKeyEnvInput');
       const aliasDescriptionInput = document.getElementById('aliasDescriptionInput');
       const mcpAliasInput = document.getElementById('mcpAliasInput');
@@ -2207,6 +2453,9 @@
       const mcpDescriptionInput = document.getElementById('mcpDescriptionInput');
       const mcpHeadersInput = document.getElementById('mcpHeadersInput');
 
+      let editingAliasKey = null;
+      let editingMcpKey = null;
+
       const camelToSnakeCase = str => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       const camelToKebabCase = str => str.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
 
@@ -2214,19 +2463,66 @@
         if (!value) return;
 
         await navigator.clipboard.writeText(value);
-        const responseDiv = document.getElementById('testRequestResponse');
-        responseDiv.innerHTML = successMessage;
-        responseDiv.style.display = 'block';
+        showPageMessage(logsPageMessage, successMessage);
+      }
+
+      function showPageMessage(target, message, type = 'success') {
+        if (!target) return;
+        target.textContent = message || '';
+        target.classList.toggle('error', type === 'error');
+
+        if (message) {
+          window.clearTimeout(target._messageTimer);
+          target._messageTimer = window.setTimeout(() => {
+            target.textContent = '';
+            target.classList.remove('error');
+          }, 2600);
+        }
+      }
+
+      function navigateTo(pathname) {
+        history.pushState(null, '', pathname);
+        managePage();
+      }
+
+      function getModelsMap() {
+        return (localGatewaySummary?.models || []).reduce((acc, item) => {
+          acc[item.alias] = {
+            provider: item.provider,
+            upstreamModel: item.upstreamModel,
+            providerApiKey: item.providerApiKey,
+            providerApiKeyEnv: item.providerApiKeyEnv,
+            displayName: item.displayName,
+            description: item.description,
+          };
+          return acc;
+        }, {});
+      }
+
+      function getMcpMap() {
+        return (localGatewaySummary?.mcpServers || []).reduce((acc, item) => {
+          acc[item.alias] = {
+            routePath: item.routePath,
+            targetUrl: item.targetUrl,
+            displayName: item.displayName,
+            description: item.description,
+            headers: item.headers,
+          };
+          return acc;
+        }, {});
       }
 
       function renderLocalAliases(summary) {
-        if (!localAliasList) return;
+        if (!localAliasList || !modelsAdminList) return;
 
         const aliases = summary?.models || [];
         localGatewayAliasCount.textContent = `${aliases.length} 个别名`;
+        modelsAdminCount.textContent = String(aliases.length);
+        modelsAdminKey.textContent = summary?.defaultGatewayKey || '不可用';
 
         if (!aliases.length) {
           localAliasList.innerHTML = '<div class="alias-empty">暂无模型别名配置。</div>';
+          modelsAdminList.innerHTML = '<div class="alias-empty">暂无模型别名配置。</div>';
           return;
         }
 
@@ -2241,19 +2537,42 @@
                 <div class="alias-meta mono">${alias.alias} → ${alias.upstreamModel}</div>
                 <div class="alias-meta">${alias.description || '暂无描述。'}</div>
               </div>
-              <div class="alias-meta mono">${alias.providerApiKeyEnv || '内联 provider key'}</div>
+              <div class="alias-meta mono">${alias.providerApiKey ? '内联 Provider Key 已配置' : (alias.providerApiKeyEnv || '未配置')}</div>
+            </div>`)
+          .join('');
+
+        modelsAdminList.innerHTML = aliases
+          .map(alias => `
+            <div class="management-item">
+              <div>
+                <div class="management-item-title">
+                  <span>${alias.displayName || alias.alias}</span>
+                  <span class="management-pill">${alias.provider}</span>
+                </div>
+                <div class="management-item-meta mono">别名：${alias.alias}</div>
+                <div class="management-item-meta mono">上游模型：${alias.upstreamModel}</div>
+                <div class="management-item-meta mono">鉴权方式：${alias.providerApiKey ? '内联 Provider Key' : (alias.providerApiKeyEnv || '未配置')}</div>
+                <div class="management-item-meta">${alias.description || '暂无描述。'}</div>
+              </div>
+              <div class="management-actions">
+                <button class="btn btn-outline btn-small" onclick="openAliasDialog('${alias.alias}')">编辑</button>
+                <button class="btn btn-small" onclick="deleteAlias('${alias.alias}')">删除</button>
+              </div>
             </div>`)
           .join('');
       }
 
       function renderLocalMcpServers(summary) {
-        if (!localMcpList || !localGatewayMcpCount) return;
+        if (!localMcpList || !localGatewayMcpCount || !mcpAdminList) return;
 
         const mcpServers = summary?.mcpServers || [];
         localGatewayMcpCount.textContent = `${mcpServers.length} 个 MCP 路由`;
+        mcpAdminCount.textContent = String(mcpServers.length);
+        mcpAdminPath.textContent = summary?.configPath || '暂无可用配置路径';
 
         if (!mcpServers.length) {
           localMcpList.innerHTML = '<div class="alias-empty">暂无 MCP 路由配置。</div>';
+          mcpAdminList.innerHTML = '<div class="alias-empty">暂无 MCP 路由配置。</div>';
           return;
         }
 
@@ -2273,6 +2592,55 @@
             </div>
           </div>
         `).join('');
+
+        mcpAdminList.innerHTML = mcpServers.map(server => `
+          <div class="management-item">
+            <div>
+              <div class="management-item-title">
+                <span>${server.displayName || server.alias}</span>
+                <span class="management-pill">${server.alias}</span>
+              </div>
+              <div class="management-item-meta mono">本地路由：${server.routePath}</div>
+              <div class="management-item-meta mono">目标地址：${server.targetUrl}</div>
+              <div class="management-item-meta mono">附加请求头：${Object.keys(server.headers || {}).length ? JSON.stringify(server.headers) : '无'}</div>
+              <div class="management-item-meta">${server.description || '暂无描述。'}</div>
+            </div>
+            <div class="management-actions">
+              <button class="btn btn-outline btn-small" onclick="openMcpDialog('${server.alias}')">编辑</button>
+              <button class="btn btn-small" onclick="deleteMcpServer('${server.alias}')">删除</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderGatewayKeys(summary) {
+        if (!gatewayKeysList) return;
+
+        const keys = summary?.gatewayKeys || [];
+        keysAdminCount.textContent = String(keys.length);
+        keysAdminDefault.textContent = summary?.defaultGatewayKey || '不可用';
+
+        if (!keys.length) {
+          gatewayKeysList.innerHTML = '<div class="alias-empty">暂无可用 Gateway Key。</div>';
+          return;
+        }
+
+        gatewayKeysList.innerHTML = keys.map((key, index) => `
+          <div class="management-item key-grid">
+            <div>
+              <div class="management-item-title">
+                <span>Gateway Key ${index + 1}</span>
+                ${index === 0 ? '<span class="management-pill">default</span>' : ''}
+              </div>
+              <div class="key-value mono">${key}</div>
+              <div class="management-item-meta">适用于本地管理、测试以及分发给不同调用方。</div>
+            </div>
+            <div class="management-actions">
+              <button class="btn btn-outline btn-small" onclick="copyText('${key}', '已复制 Gateway Key。')">复制</button>
+              <button class="btn btn-small" onclick='deleteGatewayKey(${JSON.stringify(key)})' ${keys.length === 1 ? 'disabled' : ''}>停用</button>
+            </div>
+          </div>
+        `).join('');
       }
 
       async function fetchLocalGatewaySummary() {
@@ -2289,6 +2657,7 @@
           localGatewayPath.textContent = localGatewaySummary.configPath || '暂无可用配置路径';
           renderLocalAliases(localGatewaySummary);
           renderLocalMcpServers(localGatewaySummary);
+          renderGatewayKeys(localGatewaySummary);
         } catch (error) {
           localGatewayKey.textContent = '不可用';
           localGatewayPath.textContent = '无法读取本地网关配置';
@@ -2296,58 +2665,75 @@
         }
       }
 
-      function openAliasDialog() {
+      function openAliasDialog(aliasKey = null) {
+        editingAliasKey = aliasKey;
+        const current = (localGatewaySummary?.models || []).find(item => item.alias === aliasKey);
         aliasDialog.style.display = 'flex';
         aliasDialogMessage.textContent = '';
+        aliasNameInput.value = current?.alias || '';
+        aliasProviderSelect.value = current?.provider || 'openrouter';
+        aliasUpstreamModelInput.value = current?.upstreamModel || '';
+        aliasProviderApiKeyInput.value = current?.providerApiKey || '';
+        aliasApiKeyEnvInput.value = current?.providerApiKeyEnv || '';
+        aliasDescriptionInput.value = current?.description || '';
         aliasNameInput.focus();
       }
 
       function closeAliasFormDialog() {
         aliasDialog.style.display = 'none';
         aliasDialogMessage.textContent = '';
+        editingAliasKey = null;
       }
 
-      function openMcpDialog() {
+      function openMcpDialog(aliasKey = null) {
+        editingMcpKey = aliasKey;
+        const current = (localGatewaySummary?.mcpServers || []).find(item => item.alias === aliasKey);
         mcpDialog.style.display = 'flex';
         mcpDialogMessage.textContent = '';
+        mcpAliasInput.value = current?.alias || '';
+        mcpRoutePathInput.value = current?.routePath || '';
+        mcpTargetUrlInput.value = current?.targetUrl || '';
+        mcpDisplayNameInput.value = current?.displayName || '';
+        mcpDescriptionInput.value = current?.description || '';
+        mcpHeadersInput.value = current?.headers && Object.keys(current.headers).length ? JSON.stringify(current.headers, null, 2) : '';
         mcpAliasInput.focus();
       }
 
       function closeMcpFormDialog() {
         mcpDialog.style.display = 'none';
         mcpDialogMessage.textContent = '';
+        editingMcpKey = null;
       }
 
       async function saveAlias() {
         const alias = aliasNameInput.value.trim();
         const providerName = aliasProviderSelect.value.trim();
         const upstreamModel = aliasUpstreamModelInput.value.trim();
+        const providerApiKey = aliasProviderApiKeyInput.value.trim();
         const providerApiKeyEnv = aliasApiKeyEnvInput.value.trim();
         const description = aliasDescriptionInput.value.trim();
 
-        if (!alias || !providerName || !upstreamModel || !providerApiKeyEnv) {
-          aliasDialogMessage.textContent = 'Alias name, provider, upstream model, and provider API key env are required.';
+        if (!alias || !providerName || !upstreamModel) {
+          aliasDialogMessage.textContent = 'Alias name, provider, and upstream model are required.';
           return;
         }
 
-        const nextModels = {
-          ...(localGatewaySummary?.models || []).reduce((acc, item) => {
-            acc[item.alias] = {
-              provider: item.provider,
-              upstreamModel: item.upstreamModel,
-              providerApiKeyEnv: item.providerApiKeyEnv,
-              displayName: item.displayName,
-              description: item.description,
-            };
-            return acc;
-          }, {}),
-          [alias]: {
-            provider: providerName,
-            upstreamModel,
-            providerApiKeyEnv,
-            displayName: alias,
-            description,
-          },
+        if ((!providerApiKey && !providerApiKeyEnv) || (providerApiKey && providerApiKeyEnv)) {
+          aliasDialogMessage.textContent = 'Provider API key 与 Provider API key env 二选一配置。';
+          return;
+        }
+
+        const nextModels = getModelsMap();
+        if (editingAliasKey && editingAliasKey !== alias) {
+          delete nextModels[editingAliasKey];
+        }
+        nextModels[alias] = {
+          provider: providerName,
+          upstreamModel,
+          ...(providerApiKey ? { providerApiKey } : {}),
+          ...(providerApiKeyEnv ? { providerApiKeyEnv } : {}),
+          displayName: alias,
+          description,
         };
 
         saveAliasBtn.classList.add('loading');
@@ -2361,18 +2747,33 @@
             body: JSON.stringify({ models: nextModels }),
           });
 
-          aliasDialogMessage.textContent = `Saved alias ${alias}.`;
           await fetchLocalGatewaySummary();
-          aliasNameInput.value = '';
-          aliasUpstreamModelInput.value = '';
-          aliasApiKeyEnvInput.value = '';
-          aliasDescriptionInput.value = '';
-          setTimeout(closeAliasFormDialog, 500);
+          closeAliasFormDialog();
+          aliasProviderApiKeyInput.value = '';
+          showPageMessage(modelsPageMessage, `已保存 Model 别名 ${alias}。`);
         } catch (error) {
           aliasDialogMessage.textContent = 'Unable to save alias right now.';
           console.error('Failed to save local alias', error);
         } finally {
           saveAliasBtn.classList.remove('loading');
+        }
+      }
+
+      async function deleteAlias(alias) {
+        const nextModels = getModelsMap();
+        delete nextModels[alias];
+
+        try {
+          await fetch('/public/api/local-gateway', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ models: nextModels }),
+          });
+          await fetchLocalGatewaySummary();
+          showPageMessage(modelsPageMessage, `已删除 Model 别名 ${alias}。`);
+        } catch (error) {
+          showPageMessage(modelsPageMessage, '删除 Model 失败。', 'error');
+          console.error('Failed to delete model alias', error);
         }
       }
 
@@ -2399,24 +2800,16 @@
           }
         }
 
-        const nextMcpServers = {
-          ...(localGatewaySummary?.mcpServers || []).reduce((acc, item) => {
-            acc[item.alias] = {
-              routePath: item.routePath,
-              targetUrl: item.targetUrl,
-              displayName: item.displayName,
-              description: item.description,
-              headers: item.headers,
-            };
-            return acc;
-          }, {}),
-          [alias]: {
-            routePath,
-            targetUrl,
-            displayName: displayName || alias,
-            description,
-            headers,
-          },
+        const nextMcpServers = getMcpMap();
+        if (editingMcpKey && editingMcpKey !== alias) {
+          delete nextMcpServers[editingMcpKey];
+        }
+        nextMcpServers[alias] = {
+          routePath,
+          targetUrl,
+          displayName: displayName || alias,
+          description,
+          headers,
         };
 
         saveMcpBtn.classList.add('loading');
@@ -2430,15 +2823,9 @@
             body: JSON.stringify({ mcpServers: nextMcpServers }),
           });
 
-          mcpDialogMessage.textContent = `已保存 MCP 路由 ${alias}。`;
           await fetchLocalGatewaySummary();
-          mcpAliasInput.value = '';
-          mcpRoutePathInput.value = '';
-          mcpTargetUrlInput.value = '';
-          mcpDisplayNameInput.value = '';
-          mcpDescriptionInput.value = '';
-          mcpHeadersInput.value = '';
-          setTimeout(closeMcpFormDialog, 500);
+          closeMcpFormDialog();
+          showPageMessage(mcpPageMessage, `已保存 MCP 路由 ${alias}。`);
         } catch (error) {
           mcpDialogMessage.textContent = '当前无法保存 MCP 路由。';
           console.error('Failed to save MCP route', error);
@@ -2446,6 +2833,62 @@
           saveMcpBtn.classList.remove('loading');
         }
       }
+
+      async function deleteMcpServer(alias) {
+        const nextMcpServers = getMcpMap();
+        delete nextMcpServers[alias];
+
+        try {
+          await fetch('/public/api/local-gateway', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mcpServers: nextMcpServers }),
+          });
+          await fetchLocalGatewaySummary();
+          showPageMessage(mcpPageMessage, `已删除 MCP 路由 ${alias}。`);
+        } catch (error) {
+          showPageMessage(mcpPageMessage, '删除 MCP 路由失败。', 'error');
+          console.error('Failed to delete MCP route', error);
+        }
+      }
+
+      async function createGatewayKey() {
+        try {
+          const response = await fetch('/public/api/local-gateway/keys', { method: 'POST' });
+          const payload = await response.json();
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || 'Unable to create gateway key.');
+          }
+          await fetchLocalGatewaySummary();
+          showPageMessage(keysPageMessage, '已生成新的 Gateway Key。');
+        } catch (error) {
+          showPageMessage(keysPageMessage, '生成 Gateway Key 失败。', 'error');
+          console.error('Failed to create gateway key', error);
+        }
+      }
+
+      async function deleteGatewayKey(key) {
+        try {
+          const response = await fetch(`/public/api/local-gateway/keys/${encodeURIComponent(key)}`, { method: 'DELETE' });
+          const payload = await response.json();
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || 'Unable to delete gateway key.');
+          }
+          await fetchLocalGatewaySummary();
+          showPageMessage(keysPageMessage, '已停用选中的 Gateway Key。');
+        } catch (error) {
+          showPageMessage(keysPageMessage, error.message || '停用 Gateway Key 失败。', 'error');
+          console.error('Failed to delete gateway key', error);
+        }
+      }
+
+      window.openAliasDialog = openAliasDialog;
+      window.openMcpDialog = openMcpDialog;
+      window.deleteAlias = deleteAlias;
+      window.deleteMcpServer = deleteMcpServer;
+      window.createGatewayKey = createGatewayKey;
+      window.deleteGatewayKey = deleteGatewayKey;
+      window.copyText = copyText;
 
       // Dummy function for test request
       function dummyTestRequest() {
@@ -2652,8 +3095,14 @@
 
       copyGatewayKeyBtn.addEventListener('click', () => copyText(localGatewaySummary?.defaultGatewayKey, '已复制本地 Gateway Key。'));
       copyGatewayConfigBtn.addEventListener('click', () => copyText(localGatewaySummary?.configPath, '已复制本地配置路径。'));
-      addAliasBtn.addEventListener('click', openAliasDialog);
-      addMcpBtn.addEventListener('click', openMcpDialog);
+      openModelsPageBtn.addEventListener('click', () => navigateTo('/public/models'));
+      openMcpPageBtn.addEventListener('click', () => navigateTo('/public/mcp'));
+      modelsBackBtn.addEventListener('click', () => navigateTo('/public/'));
+      mcpBackBtn.addEventListener('click', () => navigateTo('/public/'));
+      keysBackBtn.addEventListener('click', () => navigateTo('/public/'));
+      addAliasPageBtn.addEventListener('click', () => openAliasDialog());
+      addMcpPageBtn.addEventListener('click', () => openMcpDialog());
+      generateGatewayKeyBtn.addEventListener('click', createGatewayKey);
       closeAliasDialog.addEventListener('click', closeAliasFormDialog);
       closeMcpDialog.addEventListener('click', closeMcpFormDialog);
       cancelAliasBtn.addEventListener('click', closeAliasFormDialog);
@@ -2701,7 +3150,13 @@
 
       // Close dialogs when clicking outside
       window.addEventListener('click', (e) => {
-          if (e.target.classList.contains('dialog-overlay')) {
+          if (e.target === aliasDialog) {
+              closeAliasFormDialog();
+          }
+          if (e.target === mcpDialog) {
+              closeMcpFormDialog();
+          }
+          if (e.target.classList && e.target.classList.contains('dialog-overlay') && e.target !== aliasDialog && e.target !== mcpDialog) {
               e.target.style.display = 'none';
           }
       });
@@ -2720,6 +3175,13 @@
       // Tab functionality
       const tabButtons = document.querySelectorAll('.tab-button');
       const tabContents = document.querySelectorAll('.main-tab-content');
+      const routeToTabMap = {
+        '/public/': 'main',
+        '/public/models': 'models',
+        '/public/mcp': 'mcp',
+        '/public/keys': 'keys',
+        '/public/logs': 'logs',
+      };
 
       function mainTabFocus(tabName) {
         if(tabName === 'logs') {
@@ -2735,19 +3197,14 @@
       tabButtons.forEach(button => {
           button.addEventListener('click', (e) => {
             e.preventDefault();
-            let tabName = button.getAttribute('data-tab');
-            const href = tabName === 'logs' ? '/public/logs' : '/public/';
-            history.pushState(null, '', href);
-            mainTabFocus(tabName);
+            navigateTo(button.getAttribute('data-route'));
           });
       });
 
       function managePage() {
-        if(window.location.pathname === '/public/logs') {
-          mainTabFocus('logs');
-        } else {
-          mainTabFocus('main');
-        }
+        const pathname = window.location.pathname.endsWith('/public') ? '/public/' : window.location.pathname;
+        const currentTab = routeToTabMap[pathname] || 'main';
+        mainTabFocus(currentTab);
       }
 
       window.addEventListener('popstate', () => {
@@ -2811,7 +3268,24 @@
 
       setupLogSource();
 
+      function renderLogsLoadingState(message = '正在监听日志...') {
+        logsTableBody.innerHTML = `
+          <tr class="loading-row">
+            <td colspan="6">
+              <div class="loading-animation"></div>
+              ${message}
+            </td>
+          </tr>`;
+      }
+
+      function resetRenderedLogs(message = '正在监听日志...') {
+        renderedLogKeys.clear();
+        renderLogsLoadingState(message);
+      }
+
       async function loadPersistedLogs() {
+        resetRenderedLogs();
+
         try {
           const response = await fetch('/public/api/logs?limit=100');
           const payload = await response.json();
@@ -2821,6 +3295,22 @@
           });
         } catch (error) {
           console.error('Failed to hydrate persisted logs', error);
+        }
+      }
+
+      async function clearLogs() {
+        try {
+          const response = await fetch('/public/api/logs', { method: 'DELETE' });
+          const payload = await response.json();
+          if (!response.ok || !payload.ok) {
+            throw new Error(payload.message || '清空日志失败。');
+          }
+
+          resetRenderedLogs('日志已清空，等待新的请求进入...');
+          showPageMessage(logsPageMessage, `已删除 ${payload.deletedCount || 0} 个日志文件。`);
+        } catch (error) {
+          showPageMessage(logsPageMessage, error.message || '清空日志失败。', 'error');
+          console.error('Failed to clear logs', error);
         }
       }
 
@@ -3153,6 +3643,7 @@
       }
 
       loadPersistedLogs();
+      clearLogsBtn.addEventListener('click', clearLogs);
 
       function incrementLogCounter() {
         if(window.location.pathname != '/public/logs') {
