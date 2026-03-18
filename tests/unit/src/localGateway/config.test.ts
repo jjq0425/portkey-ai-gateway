@@ -1,5 +1,6 @@
 import {
   readLocalGatewayConfig,
+  resolveAuthorizationModelAlias,
   resolveLocalGatewayModelAlias,
   validateLocalGatewayToken,
   writeLocalGatewayConfig,
@@ -52,6 +53,8 @@ describe('localGateway config', () => {
     expect(resolved?.providerConfig.overrideParams?.model).toBe(
       'openai/gpt-4o-mini'
     );
+    expect(resolved?.providerConfig.defaultInputGuardrails).toEqual([]);
+    expect(resolved?.providerConfig.defaultOutputGuardrails).toEqual([]);
   });
 
   it('validates local gateway bearer tokens', async () => {
@@ -62,5 +65,33 @@ describe('localGateway config', () => {
     await expect(
       validateLocalGatewayToken({ authorization: 'Bearer pk-local-nope' })
     ).resolves.toBe(false);
+  });
+
+  it('supports direct provider/model routing for valid local gateway keys', async () => {
+    const resolved = await resolveLocalGatewayModelAlias(
+      { authorization: 'Bearer pk-local-test' },
+      'openrouter/hunter-alpha'
+    );
+
+    expect(resolved?.providerConfig.provider).toBe('openrouter');
+    expect(resolved?.providerConfig.apiKey).toBe('or-test-key');
+    expect(resolved?.providerConfig.overrideParams?.model).toBe(
+      'openrouter/hunter-alpha'
+    );
+    expect(resolved?.providerConfig.defaultInputGuardrails).toEqual([]);
+    expect(resolved?.providerConfig.defaultOutputGuardrails).toEqual([]);
+  });
+
+  it('supports provider/model routing directly from the Authorization token', () => {
+    const resolved = resolveAuthorizationModelAlias(
+      { authorization: 'Bearer or-request-token' },
+      'openrouter/hunter-alpha'
+    );
+
+    expect(resolved?.providerConfig.provider).toBe('openrouter');
+    expect(resolved?.providerConfig.apiKey).toBe('or-request-token');
+    expect(resolved?.providerConfig.overrideParams?.model).toBe(
+      'openrouter/hunter-alpha'
+    );
   });
 });

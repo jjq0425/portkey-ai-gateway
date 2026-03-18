@@ -53,10 +53,6 @@ export const modelsHandler = async (context: Context, next: Next) => {
           owned_by: `local/${model.provider}`,
           root: model.upstreamModel,
         })) || [],
-      local_gateway: {
-        config_path: summary?.configPath || '',
-        gateway_keys_count: summary?.gatewayKeysCount || 0,
-      },
     });
   }
 

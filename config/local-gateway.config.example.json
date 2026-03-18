@@ -16,6 +16,13 @@
       "providerApiKeyEnv": "OPENROUTER_API_KEY",
       "displayName": "GPT-4o Mini Local",
       "description": "Routes to OpenRouter with a globally unique local alias."
+    },
+    "openrouter/hunter-alpha": {
+      "provider": "openrouter",
+      "upstreamModel": "openrouter/hunter-alpha",
+      "providerApiKeyEnv": "OPENROUTER_API_KEY",
+      "displayName": "Hunter Alpha",
+      "description": "Optional explicit alias when you want the provider/model string itself to be callable."
     }
   }
 }
