@@ -2,6 +2,10 @@ import { Context } from 'hono';
 import { CONTENT_TYPES, POWERED_BY, VALID_PROVIDERS } from '../../globals';
 import { configSchema } from './schema/config';
 import { Environment } from '../../utils/env';
+import {
+  resolveAuthorizationModelAlias,
+  resolveLocalGatewayModelAlias,
+} from '../../localGateway/config';
 
 // Regex patterns for validation (defined once for reusability)
 const VALIDATION_PATTERNS = {
@@ -77,7 +81,52 @@ const IPV4_RANGES = {
   ],
 };
 
-export const requestValidator = (c: Context, next: any) => {
+const LOCAL_ALIAS_SUPPORTED_PATHS = new Set([
+  '/v1/chat/completions',
+  '/v1/completions',
+  '/v1/embeddings',
+  '/v1/responses',
+  '/chat/completions',
+  '/completions',
+  '/embeddings',
+  '/responses',
+]);
+
+async function tryResolveLocalGatewayAlias(
+  c: Context,
+  requestHeaders: Record<string, string>
+) {
+  const contentType = requestHeaders['content-type']?.split(';')[0];
+
+  if (
+    !LOCAL_ALIAS_SUPPORTED_PATHS.has(c.req.path) ||
+    c.req.method !== 'POST' ||
+    contentType !== CONTENT_TYPES.APPLICATION_JSON
+  ) {
+    return null;
+  }
+
+  try {
+    const clonedRequest = c.req.raw.clone();
+    const requestBody = (await clonedRequest.json()) as Record<string, unknown>;
+    const modelAlias =
+      typeof requestBody?.model === 'string' ? requestBody.model : null;
+    const localGatewayResolution = await resolveLocalGatewayModelAlias(
+      requestHeaders,
+      modelAlias
+    );
+
+    if (localGatewayResolution) {
+      return localGatewayResolution;
+    }
+
+    return resolveAuthorizationModelAlias(requestHeaders, modelAlias);
+  } catch {
+    return null;
+  }
+}
+
+export const requestValidator = async (c: Context, next: any) => {
   const requestHeaders = Object.fromEntries(c.req.raw.headers);
 
   const contentType = requestHeaders['content-type'];
@@ -109,10 +158,22 @@ export const requestValidator = (c: Context, next: any) => {
       requestHeaders[`x-${POWERED_BY}-provider`]
     )
   ) {
+    const localGatewayAlias = await tryResolveLocalGatewayAlias(
+      c,
+      requestHeaders
+    );
+
+    if (localGatewayAlias) {
+      c.set('localGatewayResolvedConfig', localGatewayAlias.providerConfig);
+      c.set('localGatewayModelAlias', localGatewayAlias.alias);
+      c.set('localGatewayUpstreamModel', localGatewayAlias.upstreamModel);
+      return next();
+    }
+
     return new Response(
       JSON.stringify({
         status: 'failure',
-        message: `Either x-${POWERED_BY}-config or x-${POWERED_BY}-provider header is required`,
+        message: `Either x-${POWERED_BY}-config or x-${POWERED_BY}-provider header is required. For headerless OpenSDK routing, use either a valid local gateway bearer token plus a configured model alias, or an Authorization bearer token with a model in provider/model format.`,
       }),
       {
         status: 400,

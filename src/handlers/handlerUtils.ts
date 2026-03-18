@@ -75,6 +75,16 @@ function constructRequestBody(
   return body;
 }
 
+export function getResolvedProviderConfig(
+  c: Context,
+  requestHeaders: Record<string, any>
+): Options | Targets {
+  return (
+    c.get('localGatewayResolvedConfig') ||
+    constructConfigFromRequestHeaders(requestHeaders)
+  );
+}
+
 function constructRequestHeaders(
   requestContext: RequestContext,
   providerConfigMappedHeaders: any
@@ -501,8 +511,8 @@ export async function tryTargetsRecursively(
       ? { ...currentTarget.cache }
       : { ...inheritedConfig.cache },
     requestTimeout: null,
-    defaultInputGuardrails: inheritedConfig.defaultInputGuardrails,
-    defaultOutputGuardrails: inheritedConfig.defaultOutputGuardrails,
+    defaultInputGuardrails: inheritedConfig.defaultInputGuardrails || [],
+    defaultOutputGuardrails: inheritedConfig.defaultOutputGuardrails || [],
   };
 
   // Inherited config can be empty only for the base case of recursive call.

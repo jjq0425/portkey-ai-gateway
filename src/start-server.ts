@@ -29,6 +29,11 @@ if (
     const { join, dirname } = await import('path');
     const { fileURLToPath } = await import('url');
     const { readFileSync } = await import('fs');
+    const {
+      getLocalGatewaySummary,
+      readLocalGatewayConfig,
+      writeLocalGatewayConfig,
+    } = await import('./localGateway/config');
 
     const scriptDir = dirname(fileURLToPath(import.meta.url));
 
@@ -47,6 +52,30 @@ if (
     // Redirect `/public` to `/public/`
     app.get('/public', (c: Context) => {
       return c.redirect('/public/');
+    });
+
+    app.get('/public/api/local-gateway', async (c: Context) => {
+      const headers = Object.fromEntries(c.req.raw.headers);
+      const summary = await getLocalGatewaySummary(headers);
+
+      return c.json({
+        ok: true,
+        summary,
+      });
+    });
+
+    app.post('/public/api/local-gateway', async (c: Context) => {
+      const currentConfig = await readLocalGatewayConfig();
+      const payload = await c.req.json();
+      const nextConfig = await writeLocalGatewayConfig({
+        ...(currentConfig || {}),
+        ...(payload || {}),
+      });
+
+      return c.json({
+        ok: true,
+        config: nextConfig,
+      });
     });
   };
 
