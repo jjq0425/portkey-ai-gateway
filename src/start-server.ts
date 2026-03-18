@@ -100,6 +100,7 @@ if (
         `${upstreamPath}${requestUrl.search}`,
         upstreamBase
       );
+      // console.log(upstreamUrl)
 
       const requestHeaders = new Headers(c.req.raw.headers);
       requestHeaders.delete('host');
@@ -150,11 +151,18 @@ if (
         body: requestBody,
         redirect: 'manual',
       });
+      // console.log(upstreamResponse)
+      
+      const responseHeaders = new Headers(upstreamResponse.headers);
+      // 这些头和当前 body 可能已经不一致了，删掉
+      responseHeaders.delete('content-encoding');
+      responseHeaders.delete('content-length');
+      responseHeaders.delete('transfer-encoding');
 
       return new Response(upstreamResponse.body, {
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
-        headers: upstreamResponse.headers,
+        headers: responseHeaders,
       });
     };
 
