@@ -75,6 +75,16 @@ function constructRequestBody(
   return body;
 }
 
+export function getResolvedProviderConfig(
+  c: Context,
+  requestHeaders: Record<string, any>
+): Options | Targets {
+  return (
+    c.get('localGatewayResolvedConfig') ||
+    constructConfigFromRequestHeaders(requestHeaders)
+  );
+}
+
 function constructRequestHeaders(
   requestContext: RequestContext,
   providerConfigMappedHeaders: any

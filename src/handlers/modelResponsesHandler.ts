@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import {
-  constructConfigFromRequestHeaders,
+  getResolvedProviderConfig,
   tryTargetsRecursively,
 } from './handlerUtils';
 import { endpointStrings } from '../providers/types';
@@ -13,7 +13,7 @@ function modelResponsesHandler(
     try {
       let requestHeaders = Object.fromEntries(c.req.raw.headers);
       let request = method === 'POST' ? await c.req.json() : {};
-      const camelCaseConfig = constructConfigFromRequestHeaders(requestHeaders);
+      const camelCaseConfig = getResolvedProviderConfig(c, requestHeaders);
       const tryTargetsResponse = await tryTargetsRecursively(
         c,
         camelCaseConfig ?? {},
