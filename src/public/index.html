@@ -17,26 +17,29 @@
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
-      transition: background-color 0.2s;
-      background-color: rgb(24, 24, 27);
+      transition: background-color 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+      background: linear-gradient(135deg, #6d5efc 0%, #22d3ee 100%);
       color: white;
       border: 0px;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25);
     }
 
     .btn:hover {
-      background-color: rgba(24, 24, 27,0.9)
+      transform: translateY(-1px);
+      box-shadow: 0 16px 38px rgba(34, 211, 238, 0.24);
     }
 
     .btn-outline {
-      border: 1px solid #b8bcc2;
-      background-color: white;
-      color: rgb(24, 24, 27);
+      border: 1px solid rgba(125, 211, 252, 0.35);
+      background: rgba(15, 23, 42, 0.75);
+      color: #dbeafe;
+      box-shadow: none;
     }
 
     .btn-outline:hover {
-      background-color: #f3f4f6;
+      background: rgba(30, 41, 59, 0.95);
     }
 
     /* Loading state */
@@ -74,8 +77,9 @@
     /* header.css */
     /* Header styles */
     header {
-      background-color: white;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      background: rgba(2, 6, 23, 0.82);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.35);
       padding: 0.75rem 0;
       position: fixed;
       top: 0;
@@ -132,13 +136,13 @@
     }
 
     .header-links a {
-      color: #2563eb;
+      color: #7dd3fc;
       text-decoration: none;
       font-size: 0.875rem;
     }
 
     .header-links a:hover {
-      color: #1d4ed8;
+      color: #bae6fd;
     }
 
     /* Responsive adjustments */
@@ -277,7 +281,8 @@
     .dialog-overlay {
       position: fixed;
       inset: 0;
-      background-color: rgba(0, 0, 0, 0.5);
+      background-color: rgba(2, 6, 23, 0.78);
+      backdrop-filter: blur(8px);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -285,11 +290,13 @@
     }
 
     .dialog {
-      background-color: white;
-      border-radius: 0.5rem;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 1rem;
       padding: 1.5rem;
       width: 90%;
       max-width: 500px;
+      box-shadow: 0 24px 60px rgba(2, 6, 23, 0.48);
     }
 
     .dialog h3 {
@@ -301,7 +308,7 @@
 
     .dialog p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: #94a3b8;
       margin-bottom: 1rem;
       margin-top: 0;
     }
@@ -313,9 +320,11 @@
     .select {
       width: 100%;
       padding: 0.5rem;
-      border: 1px solid #d1d5db;
+      border: 1px solid rgba(148, 163, 184, 0.2);
       border-radius: 0.375rem;
       appearance: none;
+      background-color: rgba(2, 6, 23, 0.72);
+      color: #f8fafc;
       background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
       background-position: right 0.5rem center;
       background-repeat: no-repeat;
@@ -326,9 +335,11 @@
     .input {
       width: 90%;
       padding: 0.5rem;
-      border: 1px solid #d1d5db;
+      border: 1px solid rgba(148, 163, 184, 0.2);
       border-radius: 0.375rem;
       margin-bottom: 0.5rem;
+      background: rgba(2, 6, 23, 0.72);
+      color: #f8fafc;
     }
 
     .dialog label {
@@ -555,13 +566,16 @@
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background-color: #f3f4f6;
-      color: #213547;
+      background:
+        radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 32%),
+        radial-gradient(circle at top right, rgba(109, 94, 252, 0.18), transparent 28%),
+        linear-gradient(180deg, #020617 0%, #0f172a 46%, #111827 100%);
+      color: #e2e8f0;
       margin-top: 4rem;
     }
 
     a {
-      color: rgb(24, 24, 27);
+      color: #93c5fd;
       text-decoration: none;
     }
 
@@ -602,12 +616,14 @@
     }
 
     .card {
-      background-color: white;
-      border-radius: 0.75rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.78) 100%);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 1rem;
+      box-shadow: 0 25px 70px rgba(2, 6, 23, 0.36);
       padding: 1.5rem;
       max-width: 600px;
         margin: 0rem auto 2rem auto;
+      backdrop-filter: blur(18px);
     }
 
     .left-column .card {
@@ -639,11 +655,12 @@
       font-size: 1.125rem;
       font-weight: bold;
       margin: 0;
+      color: #f8fafc;
     }
 
     .card-subtitle {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: #94a3b8;
       margin-bottom: 1rem;
     }
 
@@ -656,7 +673,7 @@
     }
 
     .feature-item {
-      background-color: #f9fafb;
+      background: rgba(15, 23, 42, 0.72);
       border-radius: 0.5rem;
       padding: 1rem;
       display: flex;
@@ -666,10 +683,11 @@
     }
 
     .feature-item:hover {
-      box-shadow: 0px 0px 3px 1px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 18px 30px rgba(15, 23, 42, 0.34);
       cursor: pointer;
       transition: all 0.2s;
       text-decoration: none;
+      border-color: rgba(125, 211, 252, 0.24);
     }
 
     .feature-item .icon {
@@ -687,7 +705,7 @@
 
     .feature-item p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: #94a3b8;
     }
 
     /* Next Steps Card Styles */
@@ -710,14 +728,15 @@
     }
 
     .next-step-item {
-      border: 1px solid #babcc0;
+      border: 1px solid rgba(148, 163, 184, 0.2);
       border-radius: 0.5rem;
       padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       text-align: center;
-      box-shadow: 0px 5px 3px 2px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.28);
+      background: rgba(15, 23, 42, 0.72);
     }
 
     .next-step-item .icon {
@@ -735,7 +754,7 @@
 
     .next-step-item p {
       font-size: 0.875rem;
-      color: #6b7280;
+      color: #94a3b8;
       margin-bottom: 1rem;
     }
 
@@ -781,10 +800,11 @@
     /* Tabs styles */
     .tabs-container {
       display: flex;
-      background-color: #f4f4f5;
+      background: rgba(15, 23, 42, 0.78);
       padding: 0.25rem;
-      border-radius: 6px;
-      color: rgb(113, 113, 122);
+      border-radius: 999px;
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.16);
     }
 
     .tab-button:hover {
@@ -792,11 +812,11 @@
     }
 
     .tab-button.active {
-      color: rgb(9, 9, 11);
+      color: #f8fafc;
       /* border-bottom-color: #3b82f6; */
-      background-color: white;
+      background: linear-gradient(135deg, rgba(109, 94, 252, 0.22), rgba(34, 211, 238, 0.22));
       font-weight: 500;
-      box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 1px 2px 0px;
+      box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.24);
     }
 
     .tabs-container .tab-button {
@@ -829,7 +849,7 @@
       cursor: pointer;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #6b7280;
+      color: #94a3b8;
       transition: all 0.3s ease;
       border-radius: 0.375rem;
       /* margin-right: 0.5rem; */
@@ -850,6 +870,204 @@
     .tab.active {
       border-bottom-color: #3b82f6;
       font-weight: bold;
+      color: #f8fafc;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #7dd3fc;
+      margin-bottom: 0.5rem;
+    }
+
+    .local-gateway-card {
+      max-width: 900px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .local-gateway-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(109, 94, 252, 0.16), transparent 48%),
+        radial-gradient(circle at top right, rgba(34, 211, 238, 0.18), transparent 32%);
+      pointer-events: none;
+    }
+
+    .local-gateway-header,
+    .local-gateway-grid,
+    .local-alias-toolbar,
+    .alias-list {
+      position: relative;
+      z-index: 1;
+    }
+
+    .local-gateway-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .local-gateway-pill {
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      border: 1px solid rgba(125, 211, 252, 0.24);
+      background: rgba(15, 23, 42, 0.72);
+      color: #67e8f9;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .local-gateway-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .local-gateway-panel,
+    .alias-item {
+      background: rgba(2, 6, 23, 0.62);
+      border: 1px solid rgba(125, 211, 252, 0.14);
+      border-radius: 0.85rem;
+      padding: 1rem;
+    }
+
+    .panel-label,
+    .alias-meta {
+      color: #94a3b8;
+      font-size: 0.8rem;
+    }
+
+    .panel-value {
+      color: #f8fafc;
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0.35rem 0;
+    }
+
+    .panel-meta {
+      color: #67e8f9;
+      font-size: 0.82rem;
+      word-break: break-all;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .local-alias-toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .toolbar-copy-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .alias-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .alias-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .alias-title {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      color: #f8fafc;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .alias-chip {
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      background: rgba(34, 211, 238, 0.12);
+      color: #67e8f9;
+      border: 1px solid rgba(103, 232, 249, 0.22);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .alias-empty {
+      color: #94a3b8;
+      padding: 1rem 0;
+      text-align: center;
+    }
+
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .dialog-description {
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .icon-button {
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(2, 6, 23, 0.55);
+      color: #f8fafc;
+      border-radius: 999px;
+      width: 2rem;
+      height: 2rem;
+      cursor: pointer;
+    }
+
+    .alias-dialog-content {
+      max-width: 520px;
+    }
+
+    .textarea-input {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    @media (max-width: 768px) {
+      .local-gateway-header,
+      .local-alias-toolbar,
+      .alias-item {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .local-gateway-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 
@@ -901,6 +1119,42 @@
       </span>
     </div>
     <div id="main-tab" class="main-tab-content">
+      <div class="card local-gateway-card">
+        <div class="local-gateway-header">
+          <div>
+            <div class="eyebrow">LOCAL CONTROL PLANE</div>
+            <h2>Alias-driven routing for OpenSDK clients</h2>
+            <div class="card-subtitle">
+              Use one generated gateway key plus globally unique model aliases. The local config file controls the
+              provider, upstream model, and provider credential source for every alias.
+            </div>
+          </div>
+          <div class="local-gateway-pill">MODEL ROUTER</div>
+        </div>
+        <div class="local-gateway-grid">
+          <div class="local-gateway-panel">
+            <div class="panel-label">Gateway key</div>
+            <div class="panel-value mono" id="localGatewayKey">Loading…</div>
+            <div class="panel-meta" id="localGatewayPath">Preparing local gateway config…</div>
+          </div>
+          <div class="local-gateway-panel">
+            <div class="panel-label">Configured aliases</div>
+            <div class="panel-value" id="localGatewayAliasCount">0 aliases</div>
+            <div class="panel-meta">Each alias maps to one provider + upstream model.</div>
+          </div>
+        </div>
+        <div class="local-alias-toolbar">
+          <div class="toolbar-copy-group">
+            <button class="btn btn-outline" id="copyGatewayKeyBtn">Copy Gateway Key</button>
+            <button class="btn btn-outline" id="copyGatewayConfigBtn">Copy Config Path</button>
+          </div>
+          <button class="btn" id="addAliasBtn">Add Model Alias</button>
+        </div>
+        <div class="alias-list" id="localAliasList">
+          <div class="alias-empty">No aliases configured yet.</div>
+        </div>
+      </div>
+
       <div class="card curl-command">
         <h2>1. Let's make a test request</h2>
         <div class="card-subtitle">The gateway supports 250+ models across 36 AI providers. Choose your provider and API
@@ -1137,6 +1391,46 @@
         <input type="password" id="apiKeyInput" class="input" placeholder="Enter your API key">
         <button class="btn btn-outline" id="saveApiKeyBtn">Save</button>
       </div> -->
+    </div>
+
+    <div class="dialog-overlay" id="aliasDialog" style="display: none;">
+      <div class="dialog alias-dialog-content">
+        <div class="dialog-header">
+          <h3>Add local model alias</h3>
+          <button class="icon-button" id="closeAliasDialog" aria-label="Close alias dialog">✕</button>
+        </div>
+        <p class="dialog-description">
+          Save a globally unique alias to your local gateway config. Clients can call the alias directly with the local
+          gateway key.
+        </p>
+        <form id="aliasForm">
+          <label for="aliasNameInput">Alias name</label>
+          <input type="text" id="aliasNameInput" class="input" placeholder="gpt-4o-mini-local">
+
+          <label for="aliasProviderSelect">Provider</label>
+          <select id="aliasProviderSelect" class="select input">
+            <option value="openrouter">openrouter</option>
+            <option value="openai">openai</option>
+            <option value="anthropic">anthropic</option>
+            <option value="groq">groq</option>
+            <option value="deepseek">deepseek</option>
+          </select>
+
+          <label for="aliasUpstreamModelInput">Upstream model</label>
+          <input type="text" id="aliasUpstreamModelInput" class="input" placeholder="openai/gpt-4o-mini">
+
+          <label for="aliasApiKeyEnvInput">Provider API key env</label>
+          <input type="text" id="aliasApiKeyEnvInput" class="input" placeholder="OPENROUTER_API_KEY">
+
+          <label for="aliasDescriptionInput">Description</label>
+          <textarea id="aliasDescriptionInput" class="input textarea-input" placeholder="Friendly description for your alias"></textarea>
+        </form>
+        <div class="dialog-actions">
+          <button class="btn btn-outline" id="cancelAliasBtn">Cancel</button>
+          <button class="btn" id="saveAliasBtn">Save Alias</button>
+        </div>
+        <div id="aliasDialogMessage" class="dialog-description" style="margin-top: 1rem;"></div>
+      </div>
     </div>
 
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -1609,6 +1903,7 @@
       let apiKey = '';
       let providerDetails = {};
       let logCounter = 0;
+      let localGatewaySummary = null;
 
       // DOM Elements
       const providerValue = document.getElementById('providerValue');
@@ -1624,9 +1919,151 @@
       const saveApiDetailsBtn = document.getElementById('saveApiDetailsBtn');
       const languageSelect = document.getElementById('languageSelect');
       const copyConfigBtn = document.getElementById('copyConfigBtn');
+      const localGatewayKey = document.getElementById('localGatewayKey');
+      const localGatewayPath = document.getElementById('localGatewayPath');
+      const localGatewayAliasCount = document.getElementById('localGatewayAliasCount');
+      const localAliasList = document.getElementById('localAliasList');
+      const copyGatewayKeyBtn = document.getElementById('copyGatewayKeyBtn');
+      const copyGatewayConfigBtn = document.getElementById('copyGatewayConfigBtn');
+      const addAliasBtn = document.getElementById('addAliasBtn');
+      const aliasDialog = document.getElementById('aliasDialog');
+      const closeAliasDialog = document.getElementById('closeAliasDialog');
+      const cancelAliasBtn = document.getElementById('cancelAliasBtn');
+      const saveAliasBtn = document.getElementById('saveAliasBtn');
+      const aliasDialogMessage = document.getElementById('aliasDialogMessage');
+      const aliasNameInput = document.getElementById('aliasNameInput');
+      const aliasProviderSelect = document.getElementById('aliasProviderSelect');
+      const aliasUpstreamModelInput = document.getElementById('aliasUpstreamModelInput');
+      const aliasApiKeyEnvInput = document.getElementById('aliasApiKeyEnvInput');
+      const aliasDescriptionInput = document.getElementById('aliasDescriptionInput');
 
       const camelToSnakeCase = str => str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
       const camelToKebabCase = str => str.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`);
+
+      async function copyText(value, successMessage = 'Copied to clipboard') {
+        if (!value) return;
+
+        await navigator.clipboard.writeText(value);
+        const responseDiv = document.getElementById('testRequestResponse');
+        responseDiv.innerHTML = successMessage;
+        responseDiv.style.display = 'block';
+      }
+
+      function renderLocalAliases(summary) {
+        if (!localAliasList) return;
+
+        const aliases = summary?.models || [];
+        localGatewayAliasCount.textContent = `${aliases.length} alias${aliases.length === 1 ? '' : 'es'}`;
+
+        if (!aliases.length) {
+          localAliasList.innerHTML = '<div class="alias-empty">No aliases configured yet.</div>';
+          return;
+        }
+
+        localAliasList.innerHTML = aliases
+          .map(alias => `
+            <div class="alias-item">
+              <div>
+                <div class="alias-title">
+                  <span>${alias.displayName || alias.alias}</span>
+                  <span class="alias-chip">${alias.provider}</span>
+                </div>
+                <div class="alias-meta mono">${alias.alias} → ${alias.upstreamModel}</div>
+                <div class="alias-meta">${alias.description || 'No description yet.'}</div>
+              </div>
+              <div class="alias-meta mono">${alias.providerApiKeyEnv || 'inline provider key'}</div>
+            </div>`)
+          .join('');
+      }
+
+      async function fetchLocalGatewaySummary() {
+        if (!localGatewayKey || !localGatewayPath) return;
+
+        try {
+          const response = await fetch('/public/api/local-gateway');
+          const payload = await response.json();
+          localGatewaySummary = payload.summary;
+
+          if (!localGatewaySummary) return;
+
+          localGatewayKey.textContent = localGatewaySummary.defaultGatewayKey || 'Unavailable';
+          localGatewayPath.textContent = localGatewaySummary.configPath || 'No config path available';
+          renderLocalAliases(localGatewaySummary);
+        } catch (error) {
+          localGatewayKey.textContent = 'Unavailable';
+          localGatewayPath.textContent = 'Unable to load local gateway config';
+          console.error('Failed to load local gateway summary', error);
+        }
+      }
+
+      function openAliasDialog() {
+        aliasDialog.style.display = 'flex';
+        aliasDialogMessage.textContent = '';
+        aliasNameInput.focus();
+      }
+
+      function closeAliasFormDialog() {
+        aliasDialog.style.display = 'none';
+        aliasDialogMessage.textContent = '';
+      }
+
+      async function saveAlias() {
+        const alias = aliasNameInput.value.trim();
+        const providerName = aliasProviderSelect.value.trim();
+        const upstreamModel = aliasUpstreamModelInput.value.trim();
+        const providerApiKeyEnv = aliasApiKeyEnvInput.value.trim();
+        const description = aliasDescriptionInput.value.trim();
+
+        if (!alias || !providerName || !upstreamModel || !providerApiKeyEnv) {
+          aliasDialogMessage.textContent = 'Alias name, provider, upstream model, and provider API key env are required.';
+          return;
+        }
+
+        const nextModels = {
+          ...(localGatewaySummary?.models || []).reduce((acc, item) => {
+            acc[item.alias] = {
+              provider: item.provider,
+              upstreamModel: item.upstreamModel,
+              providerApiKeyEnv: item.providerApiKeyEnv,
+              displayName: item.displayName,
+              description: item.description,
+            };
+            return acc;
+          }, {}),
+          [alias]: {
+            provider: providerName,
+            upstreamModel,
+            providerApiKeyEnv,
+            displayName: alias,
+            description,
+          },
+        };
+
+        saveAliasBtn.classList.add('loading');
+
+        try {
+          await fetch('/public/api/local-gateway', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ models: nextModels }),
+          });
+
+          aliasDialogMessage.textContent = `Saved alias ${alias}.`;
+          await fetchLocalGatewaySummary();
+          aliasNameInput.value = '';
+          aliasUpstreamModelInput.value = '';
+          aliasApiKeyEnvInput.value = '';
+          aliasDescriptionInput.value = '';
+          setTimeout(closeAliasFormDialog, 500);
+        } catch (error) {
+          aliasDialogMessage.textContent = 'Unable to save alias right now.';
+          console.error('Failed to save local alias', error);
+        } finally {
+          saveAliasBtn.classList.remove('loading');
+        }
+      }
 
       // Dummy function for test request
       function dummyTestRequest() {
@@ -1831,6 +2268,13 @@
           // addLog('Routing config copied to clipboard');
       });
 
+      copyGatewayKeyBtn.addEventListener('click', () => copyText(localGatewaySummary?.defaultGatewayKey, 'Local gateway key copied.'));
+      copyGatewayConfigBtn.addEventListener('click', () => copyText(localGatewaySummary?.configPath, 'Local config path copied.'));
+      addAliasBtn.addEventListener('click', openAliasDialog);
+      closeAliasDialog.addEventListener('click', closeAliasFormDialog);
+      cancelAliasBtn.addEventListener('click', closeAliasFormDialog);
+      saveAliasBtn.addEventListener('click', saveAlias);
+
       // Modify existing event listeners
       providerSelect.addEventListener('change', (e) => {
           provider = e.target.value;
@@ -1867,6 +2311,7 @@
       // Initialize
       updateAllCommands();
       updateRoutingConfig();
+      fetchLocalGatewaySummary();
 
       // Close dialogs when clicking outside
       window.addEventListener('click', (e) => {
@@ -1880,6 +2325,7 @@
           if (e.key === 'Escape') {
               providerDialog.style.display = 'none';
               apiKeyDialog.style.display = 'none';
+              aliasDialog.style.display = 'none';
               logDetailsModal.style.display = 'none';
           }
       });
