@@ -8,6 +8,7 @@ import {
   getLogsFilename,
   getLogSourceType,
   readPersistedLogEntries,
+  clearPersistedLogs,
   persistLogEntry,
   shouldLogRequest,
   truncateResponsePayload,
@@ -121,6 +122,35 @@ describe('log middleware helpers', () => {
           status: 200,
           response: { ok: true },
         });
+      } finally {
+        delete process.env.PORTKEY_LOGS_DIR;
+        await fs.rm(tempRoot, { recursive: true, force: true });
+      }
+    });
+
+    it('clears persisted log files for the dashboard reset action', async () => {
+      const tempRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'gateway-clear-logs-')
+      );
+      process.env.PORTKEY_LOGS_DIR = path.join(tempRoot, 'logs');
+
+      try {
+        await persistLogEntry({
+          time: '3/18/2026, 10:00:00 AM',
+          sourceType: 'gateway',
+          method: 'POST',
+          endpoint: '/chat/completions',
+          status: 200,
+          duration: 25,
+          requestOptions: [],
+          response: { ok: true },
+        });
+
+        const result = await clearPersistedLogs();
+        const entries = await readPersistedLogEntries(10);
+
+        expect(result.deletedCount).toBe(1);
+        expect(entries).toEqual([]);
       } finally {
         delete process.env.PORTKEY_LOGS_DIR;
         await fs.rm(tempRoot, { recursive: true, force: true });
