@@ -15,6 +15,44 @@ const removeLogClient = (clientId: any) => {
   logClients.delete(clientId);
 };
 
+export function shouldLogRequest(url: string) {
+  try {
+    const { pathname } = new URL(url);
+
+    return [
+      '/v1/messages',
+      '/v1/messages/count_tokens',
+      '/v1/chat/completions',
+      '/chat/completions',
+      '/v1/completions',
+      '/completions',
+      '/v1/embeddings',
+      '/embeddings',
+      '/v1/images/generations',
+      '/v1/images/edits',
+      '/v1/audio/speech',
+      '/v1/audio/transcriptions',
+      '/v1/audio/translations',
+      '/v1/files',
+      '/v1/batches',
+      '/v1/responses',
+    ].some(
+      (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+    );
+  } catch {
+    return url.includes('/v1/') || url.includes('/chat/completions');
+  }
+}
+
+export function getDisplayEndpoint(url: string) {
+  try {
+    const parsedUrl = new URL(url);
+    return `${parsedUrl.pathname}${parsedUrl.search}`;
+  } catch {
+    return url;
+  }
+}
+
 const broadcastLog = async (log: any) => {
   const message = {
     data: log,
@@ -49,7 +87,7 @@ const broadcastLog = async (log: any) => {
 
 async function processLog(c: Context, start: number) {
   const ms = Date.now() - start;
-  if (!c.req.url.includes('/v1/')) return;
+  if (!shouldLogRequest(c.req.url)) return;
 
   const requestOptionsArray = c.get('requestOptions');
   if (!requestOptionsArray?.length) {
@@ -76,7 +114,7 @@ async function processLog(c: Context, start: number) {
     JSON.stringify({
       time: new Date().toLocaleString(),
       method: c.req.method,
-      endpoint: c.req.url.split(':8787')[1],
+      endpoint: getDisplayEndpoint(c.req.url),
       status: c.res.status,
       duration: ms,
       requestOptions: requestOptionsArray,
