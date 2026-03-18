@@ -152,7 +152,7 @@ if (
         redirect: 'manual',
       });
       // console.log(upstreamResponse)
-      
+
       const responseHeaders = new Headers(upstreamResponse.headers);
       // 这些头和当前 body 可能已经不一致了，删掉
       responseHeaders.delete('content-encoding');
