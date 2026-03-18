@@ -6,6 +6,7 @@ import {
   createLogEntry,
   getDisplayEndpoint,
   getLogsFilename,
+  getLogSourceType,
   persistLogEntry,
   shouldLogRequest,
   truncateResponsePayload,
@@ -28,6 +29,12 @@ describe('log middleware helpers', () => {
     it('ignores the browser log stream endpoint itself', () => {
       expect(shouldLogRequest('http://localhost:18788/log/stream')).toBe(false);
     });
+
+    it('logs configured-style MCP routes', () => {
+      expect(shouldLogRequest('http://localhost:18788/mcp1/tools/list')).toBe(
+        true
+      );
+    });
   });
 
   describe('getDisplayEndpoint', () => {
@@ -43,6 +50,7 @@ describe('log middleware helpers', () => {
       expect(
         createLogEntry({
           time: '3/18/2026, 10:00:00 AM',
+          sourceType: 'gateway',
           method: 'POST',
           endpoint: '/chat/completions',
           status: 200,
@@ -52,6 +60,7 @@ describe('log middleware helpers', () => {
         })
       ).toEqual({
         time: '3/18/2026, 10:00:00 AM',
+        sourceType: 'gateway',
         method: 'POST',
         endpoint: '/chat/completions',
         status: 200,
@@ -59,6 +68,11 @@ describe('log middleware helpers', () => {
         requestOptions: [{ requestParams: { model: 'demo' } }],
         response: { id: 'resp_123' },
       });
+    });
+
+    it('marks MCP endpoints with the mcp source type', () => {
+      expect(getLogSourceType('/mcp1/tools/list')).toBe('mcp');
+      expect(getLogSourceType('/chat/completions')).toBe('gateway');
     });
 
     it('uses daily jsonl log files', () => {

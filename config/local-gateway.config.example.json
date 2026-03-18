@@ -24,5 +24,16 @@
       "displayName": "Hunter Alpha",
       "description": "Optional explicit alias when you want the provider/model string itself to be callable."
     }
+  },
+  "mcpServers": {
+    "weather": {
+      "routePath": "/mcp1",
+      "targetUrl": "http://127.0.0.1:3010/mcp",
+      "displayName": "Weather MCP",
+      "description": "Example MCP proxy entry for local gateway routing.",
+      "headers": {
+        "x-mcp-token": "replace-me"
+      }
+    }
   }
 }

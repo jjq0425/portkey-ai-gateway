@@ -23,28 +23,19 @@ export function shouldLogRequest(url: string) {
   try {
     const { pathname } = new URL(url);
 
-    return [
-      '/v1/messages',
-      '/v1/messages/count_tokens',
-      '/v1/chat/completions',
-      '/chat/completions',
-      '/v1/completions',
-      '/completions',
-      '/v1/embeddings',
-      '/embeddings',
-      '/v1/images/generations',
-      '/v1/images/edits',
-      '/v1/audio/speech',
-      '/v1/audio/transcriptions',
-      '/v1/audio/translations',
-      '/v1/files',
-      '/v1/batches',
-      '/v1/responses',
+    return ![
+      '/',
+      '/public',
+      '/public/',
+      '/public/logs',
+      '/public/api/local-gateway',
+      '/log/stream',
+      '/favicon.ico',
     ].some(
       (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
     );
   } catch {
-    return url.includes('/v1/') || url.includes('/chat/completions');
+    return !url.includes('/public') && !url.includes('/log/stream');
   }
 }
 
@@ -89,6 +80,7 @@ export function truncateResponsePayload(responsePayload: any) {
 
 export function createLogEntry({
   time = new Date().toLocaleString(),
+  sourceType,
   method,
   endpoint,
   status,
@@ -97,6 +89,7 @@ export function createLogEntry({
   response,
 }: {
   time?: string;
+  sourceType?: 'gateway' | 'mcp';
   method: string;
   endpoint: string;
   status: number;
@@ -106,6 +99,7 @@ export function createLogEntry({
 }) {
   return {
     time,
+    sourceType,
     method,
     endpoint,
     status,
@@ -123,6 +117,19 @@ export async function persistLogEntry(logEntry: Record<string, any>) {
   await mkdir(logsDir, { recursive: true });
   const logFilePath = join(logsDir, getLogsFilename());
   await appendFile(logFilePath, JSON.stringify(logEntry) + '\n', 'utf8');
+}
+
+export function getLogSourceType(endpoint: string) {
+  return [
+    '/v1/',
+    '/chat/completions',
+    '/completions',
+    '/embeddings',
+    '/responses',
+    '/models',
+  ].some((prefix) => endpoint.startsWith(prefix))
+    ? 'gateway'
+    : 'mcp';
 }
 
 const broadcastLog = async (log: any) => {
@@ -173,6 +180,7 @@ async function processLog(c: Context, start: number) {
     }
 
     const logEntry = createLogEntry({
+      sourceType: getLogSourceType(getDisplayEndpoint(c.req.url)),
       method: c.req.method,
       endpoint: getDisplayEndpoint(c.req.url),
       status: c.res.status,
@@ -183,10 +191,6 @@ async function processLog(c: Context, start: number) {
 
     if (getRuntimeKey() === 'node') {
       await persistLogEntry(logEntry);
-    }
-
-    if (!requestOptionsArray.length) {
-      return;
     }
 
     await broadcastLog(JSON.stringify(logEntry));
