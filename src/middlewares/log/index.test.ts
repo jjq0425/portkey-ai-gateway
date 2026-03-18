@@ -7,6 +7,7 @@ import {
   getDisplayEndpoint,
   getLogsFilename,
   getLogSourceType,
+  readPersistedLogEntries,
   persistLogEntry,
   shouldLogRequest,
   truncateResponsePayload,
@@ -119,6 +120,52 @@ describe('log middleware helpers', () => {
           endpoint: '/chat/completions',
           status: 200,
           response: { ok: true },
+        });
+      } finally {
+        delete process.env.PORTKEY_LOGS_DIR;
+        await fs.rm(tempRoot, { recursive: true, force: true });
+      }
+    });
+
+    it('reads recent persisted logs for UI hydration', async () => {
+      const tempRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'gateway-read-logs-')
+      );
+      process.env.PORTKEY_LOGS_DIR = path.join(tempRoot, 'logs');
+
+      try {
+        await persistLogEntry({
+          time: '3/18/2026, 10:00:00 AM',
+          sourceType: 'gateway',
+          method: 'POST',
+          endpoint: '/chat/completions',
+          status: 200,
+          duration: 25,
+          requestOptions: [],
+          response: { ok: true },
+        });
+
+        await persistLogEntry({
+          time: '3/18/2026, 10:01:00 AM',
+          sourceType: 'mcp',
+          method: 'POST',
+          endpoint: '/mcp1/tools/list',
+          status: 200,
+          duration: 10,
+          requestOptions: [],
+          response: { tools: [] },
+        });
+
+        const entries = await readPersistedLogEntries(10);
+
+        expect(entries).toHaveLength(2);
+        expect(entries[0]).toMatchObject({
+          sourceType: 'mcp',
+          endpoint: '/mcp1/tools/list',
+        });
+        expect(entries[1]).toMatchObject({
+          sourceType: 'gateway',
+          endpoint: '/chat/completions',
         });
       } finally {
         delete process.env.PORTKEY_LOGS_DIR;

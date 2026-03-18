@@ -35,6 +35,7 @@ if (
       resolveLocalMcpServer,
       writeLocalGatewayConfig,
     } = await import('./localGateway/config');
+    const { readPersistedLogEntries } = await import('./middlewares/log');
 
     const scriptDir = dirname(fileURLToPath(import.meta.url));
 
@@ -79,6 +80,19 @@ if (
       });
     });
 
+    app.get('/public/api/logs', async (c: Context) => {
+      const limitParam = c.req.query('limit');
+      const requestedLimit = Number(limitParam || '100');
+      const limit = Number.isFinite(requestedLimit)
+        ? Math.min(Math.max(requestedLimit, 1), 500)
+        : 100;
+
+      return c.json({
+        ok: true,
+        logs: await readPersistedLogEntries(limit),
+      });
+    });
+
     const proxyLocalMcpRequest = async (c: Context) => {
       const requestUrl = new URL(c.req.url);
       const resolvedMcpServer = await resolveLocalMcpServer(
@@ -100,7 +114,6 @@ if (
         `${upstreamPath}${requestUrl.search}`,
         upstreamBase
       );
-      // console.log(upstreamUrl)
 
       const requestHeaders = new Headers(c.req.raw.headers);
       requestHeaders.delete('host');
@@ -151,18 +164,11 @@ if (
         body: requestBody,
         redirect: 'manual',
       });
-      // console.log(upstreamResponse)
-
-      const responseHeaders = new Headers(upstreamResponse.headers);
-      // 这些头和当前 body 可能已经不一致了，删掉
-      responseHeaders.delete('content-encoding');
-      responseHeaders.delete('content-length');
-      responseHeaders.delete('transfer-encoding');
 
       return new Response(upstreamResponse.body, {
         status: upstreamResponse.status,
         statusText: upstreamResponse.statusText,
-        headers: responseHeaders,
+        headers: upstreamResponse.headers,
       });
     };
 

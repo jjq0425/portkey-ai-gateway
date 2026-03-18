@@ -2762,6 +2762,7 @@
       const logDetailsContent = document.getElementById('logDetailsContent');
       const closeModal = document.querySelector('.close');
       const clearLogsBtn = document.querySelector('.btn-clear-logs');
+      const renderedLogKeys = new Set();
 
       // SSE for the logs
       let logSource;
@@ -2809,6 +2810,19 @@
       }
 
       setupLogSource();
+
+      async function loadPersistedLogs() {
+        try {
+          const response = await fetch('/public/api/logs?limit=100');
+          const payload = await response.json();
+
+          (payload.logs || []).slice().reverse().forEach(entry => {
+            addLogEntry(entry, { appendToBottom: true });
+          });
+        } catch (error) {
+          console.error('Failed to hydrate persisted logs', error);
+        }
+      }
 
       function getStatusClass(status) {
         return status >= 200 && status < 300 ? 'success' : 'error';
@@ -3036,7 +3050,28 @@
           logDetailsModal.style.display = 'block';
       }
 
-      function addLogEntry(entry) {
+      function getLogEntryKey(entry) {
+        return [
+          entry.time,
+          entry.method,
+          entry.endpoint,
+          entry.status,
+          entry.duration,
+          entry.sourceType,
+        ].join('|');
+      }
+
+      function addLogEntry(entry, options = {}) {
+          const entryKey = getLogEntryKey(entry);
+          if (renderedLogKeys.has(entryKey)) {
+            return;
+          }
+
+          renderedLogKeys.add(entryKey);
+          const loadingRow = logsTableBody.querySelector('.loading-row');
+          if (loadingRow) {
+            loadingRow.remove();
+          }
           const tr = document.createElement('tr');
           tr.classList.add('new-row');
 
@@ -3081,7 +3116,11 @@
 
           viewDetailsBtn.addEventListener('click', () => showLogDetails(entry));
 
-          if (logsTableBody.children.length > 1) {
+          const appendToBottom = options.appendToBottom === true;
+
+          if (appendToBottom) {
+              logsTableBody.appendChild(tr);
+          } else if (logsTableBody.children.length > 1) {
               logsTableBody.insertBefore(tr, logsTableBody.children[1]);
           } else {
               logsTableBody.appendChild(tr);
@@ -3112,6 +3151,8 @@
             tr.className = '';
           }, 500);
       }
+
+      loadPersistedLogs();
 
       function incrementLogCounter() {
         if(window.location.pathname != '/public/logs') {

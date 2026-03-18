@@ -119,6 +119,44 @@ export async function persistLogEntry(logEntry: Record<string, any>) {
   await appendFile(logFilePath, JSON.stringify(logEntry) + '\n', 'utf8');
 }
 
+export async function readPersistedLogEntries(limit = 100) {
+  const { mkdir, readdir, readFile } = await import('node:fs/promises');
+  const { join } = await import('node:path');
+
+  const logsDir = getLogsDir();
+  await mkdir(logsDir, { recursive: true });
+
+  const logFiles = (await readdir(logsDir))
+    .filter((fileName) => fileName.endsWith('.jsonl'))
+    .sort()
+    .reverse();
+
+  const entries: Record<string, any>[] = [];
+
+  for (const fileName of logFiles) {
+    const fileContent = await readFile(join(logsDir, fileName), 'utf8');
+    const lines = fileContent
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .reverse();
+
+    for (const line of lines) {
+      try {
+        entries.push(JSON.parse(line));
+      } catch {
+        // Ignore malformed log lines so one bad entry doesn't break the UI.
+      }
+
+      if (entries.length >= limit) {
+        return entries.slice(0, limit);
+      }
+    }
+  }
+
+  return entries.slice(0, limit);
+}
+
 export function getLogSourceType(endpoint: string) {
   return [
     '/v1/',
