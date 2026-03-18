@@ -1861,8 +1861,12 @@
           <label for="aliasUpstreamModelInput">Upstream model</label>
           <input type="text" id="aliasUpstreamModelInput" class="input" placeholder="openai/gpt-4o-mini">
 
-          <label for="aliasApiKeyEnvInput">Provider API key env</label>
+          <label for="aliasProviderApiKeyInput">Provider API key（可选）</label>
+          <input type="password" id="aliasProviderApiKeyInput" class="input" placeholder="sk-... 或其他 provider key">
+
+          <label for="aliasApiKeyEnvInput">Provider API key env（可选）</label>
           <input type="text" id="aliasApiKeyEnvInput" class="input" placeholder="OPENROUTER_API_KEY">
+          <div class="dialog-description">Provider API key 与 env 二选一即可，请勿同时填写。</div>
 
           <label for="aliasDescriptionInput">Description</label>
           <textarea id="aliasDescriptionInput" class="input textarea-input" placeholder="Friendly description for your alias"></textarea>
@@ -2439,6 +2443,7 @@
       const aliasNameInput = document.getElementById('aliasNameInput');
       const aliasProviderSelect = document.getElementById('aliasProviderSelect');
       const aliasUpstreamModelInput = document.getElementById('aliasUpstreamModelInput');
+      const aliasProviderApiKeyInput = document.getElementById('aliasProviderApiKeyInput');
       const aliasApiKeyEnvInput = document.getElementById('aliasApiKeyEnvInput');
       const aliasDescriptionInput = document.getElementById('aliasDescriptionInput');
       const mcpAliasInput = document.getElementById('mcpAliasInput');
@@ -2485,6 +2490,7 @@
           acc[item.alias] = {
             provider: item.provider,
             upstreamModel: item.upstreamModel,
+            providerApiKey: item.providerApiKey,
             providerApiKeyEnv: item.providerApiKeyEnv,
             displayName: item.displayName,
             description: item.description,
@@ -2531,7 +2537,27 @@
                 <div class="alias-meta mono">${alias.alias} → ${alias.upstreamModel}</div>
                 <div class="alias-meta">${alias.description || '暂无描述。'}</div>
               </div>
-              <div class="alias-meta mono">${alias.providerApiKeyEnv || '内联 provider key'}</div>
+              <div class="alias-meta mono">${alias.providerApiKey ? '内联 Provider Key 已配置' : (alias.providerApiKeyEnv || '未配置')}</div>
+            </div>`)
+          .join('');
+
+        modelsAdminList.innerHTML = aliases
+          .map(alias => `
+            <div class="management-item">
+              <div>
+                <div class="management-item-title">
+                  <span>${alias.displayName || alias.alias}</span>
+                  <span class="management-pill">${alias.provider}</span>
+                </div>
+                <div class="management-item-meta mono">别名：${alias.alias}</div>
+                <div class="management-item-meta mono">上游模型：${alias.upstreamModel}</div>
+                <div class="management-item-meta mono">鉴权方式：${alias.providerApiKey ? '内联 Provider Key' : (alias.providerApiKeyEnv || '未配置')}</div>
+                <div class="management-item-meta">${alias.description || '暂无描述。'}</div>
+              </div>
+              <div class="management-actions">
+                <button class="btn btn-outline btn-small" onclick="openAliasDialog('${alias.alias}')">编辑</button>
+                <button class="btn btn-small" onclick="deleteAlias('${alias.alias}')">删除</button>
+              </div>
             </div>`)
           .join('');
 
@@ -2667,6 +2693,7 @@
         aliasNameInput.value = current?.alias || '';
         aliasProviderSelect.value = current?.provider || 'openrouter';
         aliasUpstreamModelInput.value = current?.upstreamModel || '';
+        aliasProviderApiKeyInput.value = current?.providerApiKey || '';
         aliasApiKeyEnvInput.value = current?.providerApiKeyEnv || '';
         aliasDescriptionInput.value = current?.description || '';
         aliasNameInput.focus();
@@ -2702,11 +2729,17 @@
         const alias = aliasNameInput.value.trim();
         const providerName = aliasProviderSelect.value.trim();
         const upstreamModel = aliasUpstreamModelInput.value.trim();
+        const providerApiKey = aliasProviderApiKeyInput.value.trim();
         const providerApiKeyEnv = aliasApiKeyEnvInput.value.trim();
         const description = aliasDescriptionInput.value.trim();
 
-        if (!alias || !providerName || !upstreamModel || !providerApiKeyEnv) {
-          aliasDialogMessage.textContent = 'Alias name, provider, upstream model, and provider API key env are required.';
+        if (!alias || !providerName || !upstreamModel) {
+          aliasDialogMessage.textContent = 'Alias name, provider, and upstream model are required.';
+          return;
+        }
+
+        if ((!providerApiKey && !providerApiKeyEnv) || (providerApiKey && providerApiKeyEnv)) {
+          aliasDialogMessage.textContent = 'Provider API key 与 Provider API key env 二选一配置。';
           return;
         }
 
@@ -2717,7 +2750,8 @@
         nextModels[alias] = {
           provider: providerName,
           upstreamModel,
-          providerApiKeyEnv,
+          ...(providerApiKey ? { providerApiKey } : {}),
+          ...(providerApiKeyEnv ? { providerApiKeyEnv } : {}),
           displayName: alias,
           description,
         };
@@ -2735,6 +2769,7 @@
 
           await fetchLocalGatewaySummary();
           closeAliasFormDialog();
+          aliasProviderApiKeyInput.value = '';
           showPageMessage(modelsPageMessage, `已保存 Model 别名 ${alias}。`);
         } catch (error) {
           aliasDialogMessage.textContent = 'Unable to save alias right now.';

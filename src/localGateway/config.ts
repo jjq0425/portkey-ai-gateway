@@ -416,6 +416,7 @@ export async function getLocalGatewaySummary(headers?: Record<string, any>) {
       upstreamModel: modelConfig.upstreamModel,
       displayName: modelConfig.displayName || alias,
       description: modelConfig.description || '',
+      providerApiKey: modelConfig.providerApiKey || '',
       providerApiKeyEnv: modelConfig.providerApiKeyEnv || '',
     })),
     mcpServers: Object.entries(config.mcpServers || {}).map(

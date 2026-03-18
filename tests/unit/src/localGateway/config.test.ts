@@ -27,6 +27,12 @@ describe('localGateway config', () => {
           providerApiKeyEnv: 'OPENROUTER_API_KEY',
           displayName: 'GPT-4o Mini Local',
         },
+        'claude-inline-local': {
+          provider: 'anthropic',
+          upstreamModel: 'anthropic/claude-3-5-sonnet-20241022',
+          providerApiKey: 'inline-test-key',
+          displayName: 'Claude Inline Local',
+        },
       },
       mcpServers: {
         weather: {
@@ -54,6 +60,9 @@ describe('localGateway config', () => {
 
     expect(config?.gatewayKeys).toEqual(['pk-local-test']);
     expect(config?.models['gpt-4o-mini-local'].provider).toBe('openrouter');
+    expect(config?.models['claude-inline-local'].providerApiKey).toBe(
+      'inline-test-key'
+    );
     expect(config?.mcpServers.weather.routePath).toBe('/mcp1');
   });
 
@@ -70,6 +79,19 @@ describe('localGateway config', () => {
     );
     expect(resolved?.providerConfig.defaultInputGuardrails).toEqual([]);
     expect(resolved?.providerConfig.defaultOutputGuardrails).toEqual([]);
+  });
+
+  it('prefers inline provider api keys when configured on a local alias', async () => {
+    const resolved = await resolveLocalGatewayModelAlias(
+      { authorization: 'Bearer pk-local-test' },
+      'claude-inline-local'
+    );
+
+    expect(resolved?.providerConfig.provider).toBe('anthropic');
+    expect(resolved?.providerConfig.apiKey).toBe('inline-test-key');
+    expect(resolved?.providerConfig.overrideParams?.model).toBe(
+      'anthropic/claude-3-5-sonnet-20241022'
+    );
   });
 
   it('validates local gateway bearer tokens', async () => {
