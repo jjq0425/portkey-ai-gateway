@@ -2,6 +2,7 @@ import { getRuntimeKey } from 'hono/adapter';
 import { VALID_PROVIDERS } from '../globals';
 import { Options } from '../types/requestBody';
 import defaultFileScopes from '../data/file-path-scope-defaults.json';
+import { HookObject, HookType } from '../middlewares/hooks/types';
 
 export interface LocalGatewayModelConfigEntry {
   provider: string;
@@ -271,7 +272,7 @@ function createDirectProviderResolution(
       provider,
       apiKey: providerApiKey,
       forwardHeaders: [],
-      beforeRequestHooks: [],
+      beforeRequestHooks: createLocalGatewayBeforeRequestHooks(),
       afterRequestHooks: [],
       defaultInputGuardrails: [],
       defaultOutputGuardrails: [],
@@ -284,6 +285,23 @@ function createDirectProviderResolution(
       },
     } satisfies Options,
   };
+}
+
+function createLocalGatewayBeforeRequestHooks(): HookObject[] {
+  return [
+    {
+      id: 'local-file-path-monitor',
+      type: HookType.GUARDRAIL,
+      deny: false,
+      checks: [
+        {
+          id: 'default.filePathMonitor',
+          parameters: {},
+        },
+      ],
+      eventType: 'beforeRequestHook',
+    },
+  ];
 }
 
 function resolveDirectProviderModel(modelName: string) {
@@ -369,7 +387,7 @@ export async function resolveLocalGatewayModelAlias(
         ? { customHeaders: modelConfig.customHeaders }
         : {}),
       forwardHeaders: [],
-      beforeRequestHooks: [],
+      beforeRequestHooks: createLocalGatewayBeforeRequestHooks(),
       afterRequestHooks: [],
       defaultInputGuardrails: [],
       defaultOutputGuardrails: [],
