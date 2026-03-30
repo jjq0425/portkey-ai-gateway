@@ -62,6 +62,7 @@ import { handler as defaultrequiredMetadataKeys } from './default/requiredMetada
 import { handler as walledaiguardrails } from './walledai/walledprotect';
 import { handler as defaultregexReplace } from './default/regexReplace';
 import { handler as defaultallowedRequestTypes } from './default/allowedRequestTypes';
+import { handler as defaultfilePathMonitor } from './default/filePathMonitor';
 import { handler as javelinguardrails } from './javelin/guardrails';
 import { handler as f5GuardrailsScan } from './f5-guardrails/scan';
 import { handler as azureShieldPrompt } from './azure/shieldPrompt';
@@ -90,6 +91,7 @@ export const plugins = {
     addPrefix: defaultaddPrefix,
     regexReplace: defaultregexReplace,
     allowedRequestTypes: defaultallowedRequestTypes,
+    filePathMonitor: defaultfilePathMonitor,
     notNull: defaultnotNull,
   },
   qualifire: {

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "moduleId": "filePathMonitor",
+  "moduleName": "文件路径监测模块",
+  "description": "Default file and folder scopes used when the user query expresses file intent but does not clearly specify a path.",
+  "scopes": {
+    "read": ["./README.md", "./docs/**", "./plugins/**", "./src/**"],
+    "write": ["./logs/**", "./plugins/**", "./src/**", "./tmp/**"],
+    "delete": ["./logs/**", "./tmp/**"]
+  },
+  "protectedScopes": ["./.env", "./.env.*", "./.git/**", "./node_modules/**"]
+}

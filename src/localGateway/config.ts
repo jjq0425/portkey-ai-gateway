@@ -1,12 +1,15 @@
 import { getRuntimeKey } from 'hono/adapter';
 import { VALID_PROVIDERS } from '../globals';
 import { Options } from '../types/requestBody';
+import defaultFileScopes from '../data/file-path-scope-defaults.json';
 
 export interface LocalGatewayModelConfigEntry {
   provider: string;
   upstreamModel: string;
   providerApiKey?: string;
   providerApiKeyEnv?: string;
+  customHost?: string;
+  customHeaders?: Record<string, string>;
   displayName?: string;
   description?: string;
 }
@@ -145,6 +148,10 @@ function normalizeLocalGatewayConfig(
           ...(entry.providerApiKeyEnv
             ? { providerApiKeyEnv: entry.providerApiKeyEnv }
             : {}),
+          ...(entry.customHost ? { customHost: entry.customHost } : {}),
+          ...(entry.customHeaders
+            ? { customHeaders: entry.customHeaders }
+            : {}),
           ...(entry.displayName ? { displayName: entry.displayName } : {}),
           ...(entry.description ? { description: entry.description } : {}),
         },
@@ -216,6 +223,12 @@ function resolveProviderApiKey(modelConfig: LocalGatewayModelConfigEntry) {
   }
 
   return '';
+}
+
+function resolveLocalGatewayProvider(
+  modelConfig: LocalGatewayModelConfigEntry
+) {
+  return modelConfig.provider === 'custom' ? 'openai' : modelConfig.provider;
 }
 
 const DIRECT_PROVIDER_ENV_MAP: Record<string, string> = {
@@ -333,8 +346,13 @@ export async function resolveLocalGatewayModelAlias(
   }
 
   const providerApiKey = resolveProviderApiKey(modelConfig);
-  // console.log(`Resolved provider API key for alias "${modelAlias}":`, !!providerApiKey);
-  if (!providerApiKey) {
+  const resolvedProvider = resolveLocalGatewayProvider(modelConfig);
+  const requiresApiKey =
+    modelConfig.provider !== 'custom' &&
+    !modelConfig.customHeaders?.Authorization &&
+    !modelConfig.customHeaders?.authorization;
+
+  if (requiresApiKey && !providerApiKey) {
     throw new Error(
       `Missing provider API key for local model alias \"${modelAlias}\". Set provider_api_key or provider_api_key_env in ${getConfigPath()}.`
     );
@@ -344,8 +362,12 @@ export async function resolveLocalGatewayModelAlias(
     alias: modelAlias,
     upstreamModel: modelConfig.upstreamModel,
     providerConfig: {
-      provider: modelConfig.provider,
+      provider: resolvedProvider,
       apiKey: providerApiKey,
+      ...(modelConfig.customHost ? { customHost: modelConfig.customHost } : {}),
+      ...(modelConfig.customHeaders
+        ? { customHeaders: modelConfig.customHeaders }
+        : {}),
       forwardHeaders: [],
       beforeRequestHooks: [],
       afterRequestHooks: [],
@@ -414,6 +436,8 @@ export async function getLocalGatewaySummary(headers?: Record<string, any>) {
       alias,
       provider: modelConfig.provider,
       upstreamModel: modelConfig.upstreamModel,
+      customHost: modelConfig.customHost || '',
+      customHeaders: modelConfig.customHeaders || {},
       displayName: modelConfig.displayName || alias,
       description: modelConfig.description || '',
       providerApiKey: modelConfig.providerApiKey || '',
@@ -429,6 +453,7 @@ export async function getLocalGatewaySummary(headers?: Record<string, any>) {
         headers: mcpConfig.headers || {},
       })
     ),
+    filePathScopeDefaults: defaultFileScopes,
   };
 }
 

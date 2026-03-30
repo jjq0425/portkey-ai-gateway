@@ -144,6 +144,7 @@ function constructRequestHeaders(
   headers = {
     ...baseHeaders,
     ...headers,
+    ...(requestContext.providerOption?.customHeaders || {}),
     ...forwardHeadersMap,
     ...(fn === 'proxy' && proxyHeaders),
   };

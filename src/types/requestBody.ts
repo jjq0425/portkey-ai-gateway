@@ -74,6 +74,8 @@ export interface Options {
   workersAiAccountId?: string;
   /** The parameter to set custom base url */
   customHost?: string;
+  /** Static headers attached to the upstream provider request */
+  customHeaders?: Record<string, string>;
   /** The parameter to set list of headers to be forwarded as-is to the provider */
   forwardHeaders?: string[];
   /** provider option index picked based on weight in loadbalance mode */

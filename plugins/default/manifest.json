@@ -967,6 +967,22 @@
       }
     },
     {
+      "name": "File Path Monitor",
+      "id": "filePathMonitor",
+      "type": "guardrail",
+      "supportedHooks": ["beforeRequestHook"],
+      "description": [
+        {
+          "type": "subHeading",
+          "text": "Analyze the user query for file or folder intent, translate it into scoped read/write/delete restrictions, and attach the structured policy to hook results."
+        }
+      ],
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
       "name": "Not Null",
       "id": "notNull",
       "type": "guardrail",

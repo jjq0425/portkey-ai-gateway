@@ -4,8 +4,13 @@ const OpenAIAPIConfig: ProviderAPIConfig = {
   getBaseURL: () => 'https://api.openai.com/v1',
   headers: ({ providerOptions, fn }) => {
     const headersObj: Record<string, string> = {
-      Authorization: `Bearer ${providerOptions.apiKey}`,
+      ...(providerOptions.customHeaders || {}),
     };
+
+    if (providerOptions.apiKey) {
+      headersObj.Authorization = `Bearer ${providerOptions.apiKey}`;
+    }
+
     if (providerOptions.openaiOrganization) {
       headersObj['OpenAI-Organization'] = providerOptions.openaiOrganization;
     }
