@@ -5,26 +5,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Portkey AI Gateway</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-page: #f6f8fa;
-      --bg-surface: #ffffff;
-      --bg-subtle: #f6f8fa;
-      --bg-muted: #f3f4f6;
-      --border-default: #d0d7de;
-      --border-muted: #d8dee4;
-      --text-primary: #1f2328;
-      --text-secondary: #59636e;
-      --text-muted: #6e7781;
-      --accent: #24292f;
-      --accent-soft: #eef1f4;
-      --accent-border: #c7d0d9;
-      --success: #1a7f37;
-      --danger: #cf222e;
-      --shadow-sm: 0 1px 2px rgba(31, 35, 40, 0.04);
-      --shadow-md: 0 8px 24px rgba(140, 149, 159, 0.15);
-      --radius-md: 12px;
-      --radius-lg: 16px;
+      --bg-page: #f4f7fb;
+      --bg-surface: rgba(255, 255, 255, 0.88);
+      --bg-subtle: #eef4fb;
+      --bg-muted: #e7edf6;
+      --border-default: rgba(148, 163, 184, 0.25);
+      --border-muted: rgba(148, 163, 184, 0.18);
+      --text-primary: #102033;
+      --text-secondary: #4d6075;
+      --text-muted: #708299;
+      --accent: #133a63;
+      --accent-soft: #edf5ff;
+      --accent-border: rgba(19, 58, 99, 0.18);
+      --success: #13795b;
+      --danger: #cb3a31;
+      --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 24px 60px rgba(15, 23, 42, 0.12);
+      --radius-md: 18px;
+      --radius-lg: 28px;
     }
 
     /* buttons.css */
@@ -100,11 +103,11 @@
     /* header.css */
     /* Header styles */
     header {
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(208, 215, 222, 0.85);
-      box-shadow: 0 1px 0 rgba(208, 215, 222, 0.4);
-      padding: 0.75rem 0;
+      background: rgba(244, 247, 251, 0.78);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+      padding: 0.9rem 0;
       position: fixed;
       top: 0;
       left: 0;
@@ -118,7 +121,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0 1rem;
+      gap: 1rem;
+      padding: 0 1.25rem;
     }
 
     .logo {
@@ -133,7 +137,7 @@
 
     .logo span {
       font-size: 0.875rem;
-      font-weight: normal;
+      font-weight: 600;
       display: flex;
       align-items: center;
     }
@@ -162,7 +166,8 @@
     .header-links a {
       color: var(--text-secondary);
       text-decoration: none;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
+      font-weight: 600;
     }
 
     .header-links a:hover {
@@ -394,8 +399,107 @@
     /* logs.css */
     /* Logs styles */
     .card.logs-card {
-      margin-top: 1rem;
-      max-width: 1100px;
+      margin-top: 0;
+      max-width: 1180px;
+    }
+
+    .logs-page-shell {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .page-hero {
+      position: relative;
+      overflow: hidden;
+      padding: 1.75rem;
+      border-radius: var(--radius-lg);
+      background:
+        radial-gradient(circle at top left, rgba(91, 141, 239, 0.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(16, 185, 129, 0.16), transparent 28%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(241, 247, 255, 0.96));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      box-shadow: var(--shadow-md);
+    }
+
+    .page-hero::after {
+      content: '';
+      position: absolute;
+      right: -5rem;
+      bottom: -8rem;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(19, 58, 99, 0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .page-hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-hero-title {
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+    }
+
+    .page-hero-copy {
+      max-width: 720px;
+      margin-top: 0.55rem;
+      color: var(--text-secondary);
+      font-size: 0.98rem;
+    }
+
+    .page-hero-actions {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .audit-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.25rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .audit-stat-card {
+      padding: 1rem 1.1rem;
+      border-radius: 1.1rem;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: rgba(255, 255, 255, 0.76);
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+    }
+
+    .audit-stat-label {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+
+    .audit-stat-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .audit-stat-meta {
+      margin-top: 0.35rem;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
     }
 
     .logs-header {
@@ -459,13 +563,12 @@
     }
 
     .logs-table-container {
-      background-color: var(--bg-surface);
+      background-color: rgba(255, 255, 255, 0.84);
       border: 1px solid var(--border-default);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
+      border-radius: 22px;
+      box-shadow: var(--shadow-md);
       overflow: hidden;
       width: 100%;
-      max-width: 1100px;
     }
 
     .logs-table {
@@ -483,7 +586,7 @@
     }
 
     .logs-table th {
-      background-color: var(--bg-subtle);
+      background-color: #f4f8fc;
       font-weight: 600;
       color: var(--text-secondary);
       text-transform: uppercase;
@@ -492,7 +595,7 @@
     }
 
     .logs-table tr:hover {
-      background-color: #fafbfc;
+      background-color: #f8fbff;
     }
 
     /* .logs-table td:last-child {
@@ -598,6 +701,22 @@
       .logs-search {
           width: 100%;
           margin-bottom: 1rem;
+      }
+
+      .page-hero-header {
+        flex-direction: column;
+      }
+
+      .page-hero-title {
+        font-size: 1.65rem;
+      }
+
+      .page-hero-actions {
+        justify-content: flex-start;
+      }
+
+      .audit-stat-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -919,14 +1038,17 @@
     /* style.css */
     /* Base styles */
     body {
-      font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+      font-family: "Plus Jakarta Sans", "Avenir Next", "Segoe UI", sans-serif;
       line-height: 1.5;
       font-weight: 400;
       font-size: 14px;
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background: linear-gradient(180deg, #ffffff 0%, var(--bg-page) 100%);
+      background:
+        radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 24%),
+        radial-gradient(circle at right 20%, rgba(16, 185, 129, 0.08), transparent 22%),
+        linear-gradient(180deg, #fbfdff 0%, var(--bg-page) 100%);
       color: var(--text-primary);
       margin-top: 4rem;
     }
@@ -948,14 +1070,14 @@
     .main-content {
       max-width: 1200px;
       margin: 1rem auto;
-      padding: 0 1rem;
+      padding: 0 1.25rem;
     }
 
     /* Main content styles */
     .main-content {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 1rem;
+      padding: 1.35rem 1.25rem 2rem 1.25rem;
       transition: margin-bottom 0.3s ease;
     }
 
@@ -974,10 +1096,11 @@
 
     .card {
       background: var(--bg-surface);
+      backdrop-filter: blur(12px);
       border: 1px solid var(--border-default);
       border-radius: var(--radius-lg);
       box-shadow: var(--shadow-md);
-      padding: 1.5rem;
+      padding: 1.6rem;
       max-width: 600px;
       margin: 0rem auto 2rem auto;
     }
@@ -1029,7 +1152,7 @@
     }
 
     .feature-item {
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.9);
       border: 1px solid rgba(191, 219, 254, 0.8);
       border-radius: 0.5rem;
       padding: 1rem;
@@ -1093,7 +1216,7 @@
       align-items: center;
       text-align: center;
       box-shadow: 0 16px 36px rgba(148, 163, 184, 0.16);
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.9);
     }
 
     .next-step-item .icon {
@@ -1154,30 +1277,34 @@
     /* tabs.css */
     /* Tabs styles */
     .tabs-container {
-      display: flex;
-      background: var(--bg-surface);
-      padding: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(255, 255, 255, 0.82);
+      padding: 0.35rem;
       border-radius: 999px;
       color: var(--text-secondary);
-      border: 1px solid var(--border-default);
-      box-shadow: var(--shadow-sm);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
     }
 
     .tab-button:hover {
       color: var(--text-primary);
-      background: var(--accent-soft);
+      background: rgba(19, 58, 99, 0.06);
     }
 
     .tab-button.active {
-      color: var(--text-primary);
-      background: var(--accent-soft);
-      font-weight: 500;
-      box-shadow: inset 0 0 0 1px var(--accent-border);
+      color: #fff;
+      background: linear-gradient(135deg, #133a63, #215b98);
+      font-weight: 700;
+      box-shadow: 0 12px 20px rgba(19, 58, 99, 0.24);
     }
 
     .tabs-container .tab-button {
       min-width: 100px;
-      padding: 0.3rem 0.875rem;
+      padding: 0.75rem 1rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
     }
 
     /* Tab content styles */
@@ -1195,20 +1322,30 @@
 
     .main-tab-content.active {
       display: block;
+      animation: pageEnter 0.28s ease;
+    }
+
+    @keyframes pageEnter {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .tab-button {
       padding: 0.5rem 1rem;
       background: none;
       border: none;
-      border-bottom: 2px solid transparent;
       cursor: pointer;
       font-size: 0.875rem;
-      font-weight: 500;
+      font-weight: 700;
       color: var(--text-secondary);
-      transition: all 0.3s ease;
-      border-radius: 0.375rem;
-      /* margin-right: 0.5rem; */
+      transition: all 0.2s ease;
+      border-radius: 999px;
     }
 
     .tabs {
@@ -1485,6 +1622,50 @@
       color: var(--danger);
     }
 
+    [data-current-page="main"] #gatewayStatusCard {
+      display: flex;
+    }
+
+    body:not([data-current-page="main"]) #gatewayStatusCard {
+      display: none;
+    }
+
+    body[data-current-page="logs"] .main-content {
+      max-width: 1280px;
+    }
+
+    body[data-current-page="logs"] .tabs-container {
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .quick-access-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .quick-access-card {
+      padding: 1rem 1.1rem;
+      border-radius: 1.1rem;
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(238,244,251,0.95));
+      box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+    }
+
+    .quick-access-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.35rem;
+    }
+
+    .quick-access-copy {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.8rem;
+    }
+
     .btn-small {
       padding: 0.48rem 0.8rem;
       border-radius: 0.7rem;
@@ -1525,6 +1706,10 @@
       }
 
       .local-gateway-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-access-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -1574,7 +1759,7 @@
   </header>
 
   <div class="main-content">
-    <div class="logo card">
+    <div class="logo card" id="gatewayStatusCard">
       <span>
         <div class="status-dot"></div>
         &nbsp;&nbsp;Your AI Gateway is now running
@@ -1643,6 +1828,29 @@
           </div>
           <div class="file-scope-grid" id="defaultFileScopeList">
             <div class="alias-empty">正在加载默认文件 scope…</div>
+          </div>
+        </div>
+
+        <div class="file-scope-section">
+          <div class="mcp-section-header">
+            <div>
+              <h3 style="margin:0;">快速入口</h3>
+              <div class="card-subtitle" style="margin:0.35rem 0 0 0;">
+                把配置维护和权限监察分开，避免控制台与审计日志混在一个视图里。
+              </div>
+            </div>
+          </div>
+          <div class="quick-access-grid">
+            <div class="quick-access-card">
+              <div class="quick-access-title">权限审计 Logs</div>
+              <div class="quick-access-copy">进入独立日志页面，集中查看 MCP/LLM 请求、状态码、耗时与明细。</div>
+              <button class="btn" id="openLogsPageBtn">进入 Logs 审计页</button>
+            </div>
+            <div class="quick-access-card">
+              <div class="quick-access-title">密钥与模型配置</div>
+              <div class="quick-access-copy">日常控制仍然保留在 Gateway 主控制台，便于快速调整别名、MCP 路由与 PK。</div>
+              <button class="btn btn-outline" id="jumpToKeysPageBtn">前往 Keys 管理</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1900,48 +2108,80 @@
     </div>
 
     <div id="logs-tab" class="main-tab-content">
-      <div class="card logs-card">
-        <h2>实时日志</h2>
-        <div class="logs-header">
-          <div class="logs-header-main">
-            <div class="card-subtitle" style="margin:0;">可查看实时请求，支持一键清空历史日志。</div>
-            <div class="logs-auto-status" id="logsAutoRefreshStatus">自动刷新已关闭，实时日志流仍会持续推送新请求。</div>
-            <div id="logsPageMessage" class="page-message"></div>
-          </div>
-          <div class="logs-toolbar">
-            <button class="btn btn-outline" id="refreshLogsBtn">立即刷新</button>
-            <div class="logs-refresh-group">
-              <label for="logsAutoRefreshToggle">自动刷新</label>
-              <input type="checkbox" id="logsAutoRefreshToggle">
-              <input type="number" id="logsAutoRefreshIntervalInput" class="logs-refresh-input" min="5" step="1" value="30">
-              <span class="logs-refresh-hint">秒</span>
+      <div class="logs-page-shell">
+        <section class="page-hero">
+          <div class="page-hero-header">
+            <div>
+              <div class="eyebrow">AUDIT LOGS</div>
+              <h2 class="page-hero-title">权限监察与请求审计</h2>
+              <div class="page-hero-copy">
+                Logs 现在是单独页面。这里专门用于权限监察、MCP 路由检查和 LLM 请求审计，减少与日常配置操作的干扰。
+              </div>
             </div>
-            <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+            <div class="page-hero-actions">
+              <button class="btn btn-outline" id="logsBackBtn">返回 Gateway</button>
+              <button class="btn" id="refreshLogsBtn">立即刷新</button>
+            </div>
           </div>
-        </div>
-        <div class="logs-table-container">
-          <table class="logs-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Method</th>
-                <th>Endpoint</th>
-                <th>Status</th>
-                <th>Duration</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="logsTableBody">
-              <!-- First row should be a spinner with text saying "Listening for logs..."-->
-              <tr class="loading-row">
-                <td colspan="6">
+          <div class="audit-stat-grid">
+            <div class="audit-stat-card">
+              <div class="audit-stat-label">监控范围</div>
+              <div class="audit-stat-value">LLM + MCP</div>
+              <div class="audit-stat-meta">统一查看模型请求与 MCP 代理调用。</div>
+            </div>
+            <div class="audit-stat-card">
+              <div class="audit-stat-label">用途</div>
+              <div class="audit-stat-value">权限监察</div>
+              <div class="audit-stat-meta">辅助判断路径权限、默认 scope 与异常访问。</div>
+            </div>
+            <div class="audit-stat-card">
+              <div class="audit-stat-label">刷新方式</div>
+              <div class="audit-stat-value">SSE + 定时同步</div>
+              <div class="audit-stat-meta">实时推送新请求，也可按间隔回补最近日志。</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="card logs-card">
+          <div class="logs-header">
+            <div class="logs-header-main">
+              <h2 style="margin-bottom:0.35rem;">实时日志流</h2>
+              <div class="card-subtitle" style="margin:0;">用于排查权限边界、查看访问轨迹，并支持一键清空历史日志。</div>
+              <div class="logs-auto-status" id="logsAutoRefreshStatus">自动刷新已关闭，实时日志流仍会持续推送新请求。</div>
+              <div id="logsPageMessage" class="page-message"></div>
+            </div>
+            <div class="logs-toolbar">
+              <div class="logs-refresh-group">
+                <label for="logsAutoRefreshToggle">自动刷新</label>
+                <input type="checkbox" id="logsAutoRefreshToggle">
+                <input type="number" id="logsAutoRefreshIntervalInput" class="logs-refresh-input" min="5" step="1" value="30">
+                <span class="logs-refresh-hint">秒</span>
+              </div>
+              <button class="btn btn-outline btn-clear-logs" id="clearLogsBtn">清空旧日志</button>
+            </div>
+          </div>
+          <div class="logs-table-container">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Method</th>
+                  <th>Endpoint</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="logsTableBody">
+                <tr class="loading-row">
+                  <td colspan="6">
                     <div class="loading-animation"></div>
                     正在监听日志...
-                </td>
-            </tr>
-              <!-- Log entries will be dynamically added here -->
-            </tbody>
-          </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -2571,9 +2811,12 @@
       const copyGatewayConfigBtn = document.getElementById('copyGatewayConfigBtn');
       const openModelsPageBtn = document.getElementById('openModelsPageBtn');
       const openMcpPageBtn = document.getElementById('openMcpPageBtn');
+      const openLogsPageBtn = document.getElementById('openLogsPageBtn');
+      const jumpToKeysPageBtn = document.getElementById('jumpToKeysPageBtn');
       const modelsBackBtn = document.getElementById('modelsBackBtn');
       const mcpBackBtn = document.getElementById('mcpBackBtn');
       const keysBackBtn = document.getElementById('keysBackBtn');
+      const logsBackBtn = document.getElementById('logsBackBtn');
       const addAliasPageBtn = document.getElementById('addAliasPageBtn');
       const addMcpPageBtn = document.getElementById('addMcpPageBtn');
       const generateGatewayKeyBtn = document.getElementById('generateGatewayKeyBtn');
@@ -3314,9 +3557,12 @@
       copyGatewayConfigBtn.addEventListener('click', () => copyText(localGatewaySummary?.configPath, '已复制本地配置路径。'));
       openModelsPageBtn.addEventListener('click', () => navigateTo('/public/models'));
       openMcpPageBtn.addEventListener('click', () => navigateTo('/public/mcp'));
+      openLogsPageBtn.addEventListener('click', () => navigateTo('/public/logs'));
+      jumpToKeysPageBtn.addEventListener('click', () => navigateTo('/public/keys'));
       modelsBackBtn.addEventListener('click', () => navigateTo('/public/'));
       mcpBackBtn.addEventListener('click', () => navigateTo('/public/'));
       keysBackBtn.addEventListener('click', () => navigateTo('/public/'));
+      logsBackBtn.addEventListener('click', () => navigateTo('/public/'));
       addAliasPageBtn.addEventListener('click', () => openAliasDialog());
       addMcpPageBtn.addEventListener('click', () => openMcpDialog());
       generateGatewayKeyBtn.addEventListener('click', createGatewayKey);
@@ -3428,6 +3674,7 @@
       function managePage() {
         const pathname = window.location.pathname.endsWith('/public') ? '/public/' : window.location.pathname;
         const currentTab = routeToTabMap[pathname] || 'main';
+        document.body.setAttribute('data-current-page', currentTab);
         mainTabFocus(currentTab);
       }
 
