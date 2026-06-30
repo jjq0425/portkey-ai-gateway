@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "generatedAt": "2026-03-18T00:00:00.000Z",
+  "gatewayKeys": ["pk-12138"],
+  "models": {
+    "longcatflash": {
+      "provider": "longcat",
+      "upstreamModel": "LongCat-Flash-Lite",
+      "providerApiKey": "ak_29u3BL8U76ql0ig7U78f06zS97n4Y",
+      "displayName": "longcatflash",
+      "description": "Optional explicit alias when you want the provider/model string itself to be callable."
+    }
+  },
+  "mcpServers": {
+    
+  }
+}

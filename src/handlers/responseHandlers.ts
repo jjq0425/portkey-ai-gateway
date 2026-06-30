@@ -19,6 +19,7 @@ import { env } from 'hono/adapter';
 import { OpenAIModelResponseJSONToStreamGenerator } from '../providers/open-ai-base/createModelResponse';
 import { anthropicMessagesJsonToStreamGenerator } from '../providers/anthropic-base/utils/streamGenerator';
 import { endpointStrings } from '../providers/types';
+import { wrapStreamingResponseWithIRIntercept } from '../middlewares/irIntercept';
 
 /**
  * Handles various types of responses based on the specified parameters
@@ -47,7 +48,9 @@ export async function responseHandler(
   strictOpenAiCompliance: boolean,
   gatewayRequestUrl: string,
   areSyncHooksAvailable: boolean,
-  hookSpanId: string
+  hookSpanId: string,
+  // [ir-intercept] 让流式 IR 拦截能拿到完整请求上下文，用于网关代发重试请求
+  requestHeaders?: Record<string, string>
 ): Promise<{
   response: Response;
   responseJson: Record<string, any> | null;
@@ -112,19 +115,38 @@ export async function responseHandler(
         responseTransformer as endpointStrings,
         hooksResult
       );
-      return { response: streamingResponse, responseJson: null };
-    }
-    return {
-      response: handleStreamingMode(
-        response,
-        provider,
-        responseTransformerFunction,
-        requestURL,
-        strictOpenAiCompliance,
+      // [ir-intercept] 缓存回放的流也走拦截，保证用户视角一致
+      const wrapped = wrapStreamingResponseWithIRIntercept(
+        streamingResponse,
+        responseTransformer as string,
         gatewayRequest,
-        responseTransformer as endpointStrings,
-        hooksResult
-      ),
+        c,
+        providerOptions,
+        requestHeaders || {}
+      );
+      return { response: wrapped, responseJson: null };
+    }
+    const streamingResponse = handleStreamingMode(
+      response,
+      provider,
+      responseTransformerFunction,
+      requestURL,
+      strictOpenAiCompliance,
+      gatewayRequest,
+      responseTransformer as endpointStrings,
+      hooksResult
+    );
+    // [ir-intercept] 在已 transform 过的 SSE 上再套一层 IR 拦截
+    const wrapped = wrapStreamingResponseWithIRIntercept(
+      streamingResponse,
+      responseTransformer as string,
+      gatewayRequest,
+      c,
+      providerOptions,
+      requestHeaders || {}
+    );
+    return {
+      response: wrapped,
       responseJson: null,
     };
   }
@@ -171,7 +193,8 @@ export async function responseHandler(
     strictOpenAiCompliance,
     gatewayRequestUrl,
     gatewayRequest,
-    areSyncHooksAvailable
+    areSyncHooksAvailable,
+    c
   );
 
   return {

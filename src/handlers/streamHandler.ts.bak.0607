@@ -14,9 +14,6 @@ import { OpenAIChatCompleteResponse } from '../providers/openai/chatComplete';
 import { OpenAICompleteResponse } from '../providers/openai/complete';
 import { endpointStrings } from '../providers/types';
 import { Params } from '../types/requestBody';
-// [tool-hijack DISABLE]
-import { hijackNonStreamingJson, hijackStreamingChunk } from '../middlewares/toolHijack';
-import { interceptNonStreamingJson as irInterceptNonStreamingJson } from '../middlewares/irIntercept';
 import { getStreamModeSplitPattern, type SplitPatternType } from '../utils';
 
 function readUInt32BE(buffer: Uint8Array, offset: number) {
@@ -241,9 +238,7 @@ export async function handleNonStreamingMode(
   strictOpenAiCompliance: boolean,
   gatewayRequestUrl: string,
   gatewayRequest: Params,
-  areSyncHooksAvailable: boolean,
-  // [ir-intercept] 可选 Hono Context，用于跳过自身代发请求的回环拦截
-  c?: any
+  areSyncHooksAvailable: boolean
 ): Promise<{
   response: Response;
   json: Record<string, any> | null;
@@ -282,18 +277,6 @@ export async function handleNonStreamingMode(
     };
   }
 
- // [tool-hijack DISABLED] non-streaming rewrite turned off
-  if (responseBodyJson && typeof responseBodyJson === 'object') {
-    try { hijackNonStreamingJson(responseBodyJson); } catch (e) {
-      console.error('[tool-hijack] non-streaming rewrite failed:', e);
-    }
-    // [ir-intercept] 根据 clawAVC 开关 + 当前 turn 的 IR 拦截 IR 外工具
-    try {
-      await irInterceptNonStreamingJson(responseBodyJson, gatewayRequest, c);
-    } catch (e) {
-      console.error('[ir-intercept] non-streaming intercept failed:', e);
-    }
-  }
   return {
     response: new Response(JSON.stringify(responseBodyJson), response),
     json: responseBodyJson as Record<string, any>,
@@ -354,7 +337,7 @@ export function handleStreamingMode(
           strictOpenAiCompliance,
           gatewayRequest
         )) {
-          await writer.write(encoder.encode(chunk)); // [tool-hijack DISABLED]
+          await writer.write(encoder.encode(chunk));
         }
       } catch (error) {
         console.error('Error during stream processing:', proxyProvider, error);
@@ -388,7 +371,7 @@ export function handleStreamingMode(
           strictOpenAiCompliance,
           gatewayRequest
         )) {
-          await writer.write(encoder.encode(chunk)); // [tool-hijack DISABLED]
+          await writer.write(encoder.encode(chunk));
         }
       } catch (error) {
         console.error('Error during stream processing:', proxyProvider, error);
@@ -459,7 +442,7 @@ export async function handleJSONToStreamResponse(
         if (chunk.done) {
           break;
         }
-        await writer.write(encoder.encode(chunk.value)); // [tool-hijack DISABLED]
+        await writer.write(encoder.encode(chunk.value));
       }
       writer.close();
     })();
@@ -476,7 +459,7 @@ export async function handleJSONToStreamResponse(
         }
       }
       for (const chunk of streamChunkArray) {
-        await writer.write(encoder.encode(chunk)); // [tool-hijack DISABLED]
+        await writer.write(encoder.encode(chunk));
       }
       writer.close();
     })();

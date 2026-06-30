@@ -92,7 +92,10 @@ export class ResponseService {
       this.context.strictOpenAiCompliance,
       this.context.honoContext.req.url,
       this.hooksService.areSyncHooksAvailable,
-      this.hooksService.hookSpan?.id as string
+      this.hooksService.hookSpan?.id as string,
+      // [ir-intercept] 把原始 requestHeaders 传给 responseHandler，
+      // 流式 IR 拦截命中后用 tryPost 代发请求需要这套头部
+      this.context.requestHeaders
     );
   }
 

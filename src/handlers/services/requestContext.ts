@@ -8,7 +8,7 @@ import {
   RetrySettings,
 } from '../../types/requestBody';
 import { endpointStrings } from '../../providers/types';
-import { HEADER_KEYS, RETRY_STATUS_CODES } from '../../globals';
+import { HEADER_KEYS, RETRY_STATUS_CODES, OPEN_AI } from '../../globals';
 import { HookObject } from '../../middlewares/hooks/types';
 import { HooksManager } from '../../middlewares/hooks';
 import { transformToProviderRequest } from '../../services/transformToProviderRequest';
@@ -142,6 +142,9 @@ export class RequestContext {
   }
 
   get provider(): string {
+    // If a customHost is provided, treat it as an OpenAI-compatible endpoint
+    // and default the provider to OpenAI so ProviderContext can be instantiated.
+    if (this.customHost) return OPEN_AI;
     return this.providerOption?.provider ?? '';
   }
 
