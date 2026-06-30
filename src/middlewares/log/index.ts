@@ -65,12 +65,18 @@ export function getLogsFilename(date = new Date()) {
 export function extractTextFromSSEPreview(preview: string): string | null {
   if (!preview || typeof preview !== 'string') return null;
   // 将事件按空行分割（每个事件通常以双换行结束）
-  const events = preview.split(/\r?\n\r?\n/).map((s) => s.trim()).filter(Boolean);
+  const events = preview
+    .split(/\r?\n\r?\n/)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const parsed: any[] = [];
 
   for (const ev of events) {
     // 收集所有以 data: 开头的行并尝试解析 JSON
-    const lines = ev.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const lines = ev
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
     for (const line of lines) {
       if (!line.startsWith('data:')) continue;
       const jsonPart = line.slice(5).trim();
@@ -130,7 +136,8 @@ async function getResponsePayload(c: Context, requestOptionsArray: any[] = []) {
         const chunks: Uint8Array[] = [];
         const maxBytes = 64 * 1024; // 限制为 64KB 预览，尽量抓完整流
         let total = 0;
-        const finalRegex = /"lastOne"\s*:\s*true|"finish_reason"\s*:\s*"(?!null)\w+"/;
+        const finalRegex =
+          /"lastOne"\s*:\s*true|"finish_reason"\s*:\s*"(?!null)\w+"/;
         let decodedSoFar = '';
         while (true) {
           // 以非阻塞方式读取首个可用 chunk
@@ -139,7 +146,8 @@ async function getResponsePayload(c: Context, requestOptionsArray: any[] = []) {
           // eslint-disable-next-line no-await-in-loop
           const { value, done } = await reader.read();
           if (done || !value) break;
-          const u8 = value instanceof Uint8Array ? value : new Uint8Array(value);
+          const u8 =
+            value instanceof Uint8Array ? value : new Uint8Array(value);
           chunks.push(u8);
           total += u8.length;
           // 及时解码当前已读内容并检测是否包含 final 标志
@@ -187,7 +195,9 @@ async function getResponsePayload(c: Context, requestOptionsArray: any[] = []) {
         }
       })();
 
-      const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('preview-timeout')), 500));
+      const timeout = new Promise((_, rej) =>
+        setTimeout(() => rej(new Error('preview-timeout')), 500)
+      );
       // eslint-disable-next-line no-unsafe-optional-chaining
       const txt = await Promise.race([txtPromise, timeout]).catch(() => null);
       if (typeof txt === 'string' && txt) {

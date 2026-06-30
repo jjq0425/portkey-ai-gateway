@@ -11,7 +11,5 @@
       "description": "Optional explicit alias when you want the provider/model string itself to be callable."
     }
   },
-  "mcpServers": {
-    
-  }
+  "mcpServers": {}
 }

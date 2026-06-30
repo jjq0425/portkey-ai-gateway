@@ -15,7 +15,10 @@ import { OpenAICompleteResponse } from '../providers/openai/complete';
 import { endpointStrings } from '../providers/types';
 import { Params } from '../types/requestBody';
 // [tool-hijack DISABLE]
-import { hijackNonStreamingJson, hijackStreamingChunk } from '../middlewares/toolHijack';
+import {
+  hijackNonStreamingJson,
+  hijackStreamingChunk,
+} from '../middlewares/toolHijack';
 import { interceptNonStreamingJson as irInterceptNonStreamingJson } from '../middlewares/irIntercept';
 import { getStreamModeSplitPattern, type SplitPatternType } from '../utils';
 
@@ -282,9 +285,11 @@ export async function handleNonStreamingMode(
     };
   }
 
- // [tool-hijack DISABLED] non-streaming rewrite turned off
+  // [tool-hijack DISABLED] non-streaming rewrite turned off
   if (responseBodyJson && typeof responseBodyJson === 'object') {
-    try { hijackNonStreamingJson(responseBodyJson); } catch (e) {
+    try {
+      hijackNonStreamingJson(responseBodyJson);
+    } catch (e) {
       console.error('[tool-hijack] non-streaming rewrite failed:', e);
     }
     // [ir-intercept] 根据 clawAVC 开关 + 当前 turn 的 IR 拦截 IR 外工具

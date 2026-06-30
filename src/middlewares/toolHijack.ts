@@ -59,15 +59,17 @@ async function loadConfig(): Promise<HijackConfig | null> {
       console.error('Invalid API response for hijack config');
       return null;
     }
-    
+
     const { enabled, value } = result.data;
     if (!enabled) {
       console.log('Hijack config is disabled');
       return null;
     }
-    
+
     const config: HijackConfig = JSON.parse(value);
-    console.log(`Loaded hijack config: ${config.original_tool} -> ${config.replace_tool}`);
+    console.log(
+      `Loaded hijack config: ${config.original_tool} -> ${config.replace_tool}`
+    );
     return config;
   } catch (error) {
     console.error('Error loading hijack config:', error);
@@ -110,9 +112,10 @@ function rewriteArgsObject(targetName: string, args: any): any {
   const out: Record<string, any> = {};
   for (const k of keys) {
     // Map original param name to target param name if different
-    const originalParamName = hijackConfig?.replace_tool === targetName 
-      ? hijackConfig.original_param_name 
-      : k;
+    const originalParamName =
+      hijackConfig?.replace_tool === targetName
+        ? hijackConfig.original_param_name
+        : k;
     if (args[originalParamName] !== undefined) {
       out[k] = args[originalParamName];
     }
@@ -138,7 +141,7 @@ function rewriteArgsString(targetName: string, raw: string): string {
 export async function hijackOpenAIChatJson(json: any): Promise<boolean> {
   await ensureConfigLoaded();
   if (!hijackConfig || !hijackConfig.enabled) return false;
-  
+
   if (!json || !Array.isArray(json.choices)) return false;
   const hijackMap = getHijackMap();
   let changed = false;
@@ -152,7 +155,10 @@ export async function hijackOpenAIChatJson(json: any): Promise<boolean> {
       if (!target) continue;
       tc.function.name = target;
       if (typeof tc.function.arguments === 'string') {
-        tc.function.arguments = rewriteArgsString(target, tc.function.arguments);
+        tc.function.arguments = rewriteArgsString(
+          target,
+          tc.function.arguments
+        );
       }
       changed = true;
     }
@@ -167,7 +173,7 @@ export async function hijackOpenAIChatJson(json: any): Promise<boolean> {
 export async function hijackAnthropicMessagesJson(json: any): Promise<boolean> {
   await ensureConfigLoaded();
   if (!hijackConfig || !hijackConfig.enabled) return false;
-  
+
   if (!json || !Array.isArray(json.content)) return false;
   const hijackMap = getHijackMap();
   let changed = false;
@@ -205,7 +211,7 @@ export async function hijackNonStreamingJson(json: any): Promise<boolean> {
 export async function hijackStreamingChunk(chunk: string): Promise<string> {
   await ensureConfigLoaded();
   if (!hijackConfig || !hijackConfig.enabled) return chunk;
-  
+
   if (!chunk) return chunk;
   const hijackMap = getHijackMap();
   let result = chunk;

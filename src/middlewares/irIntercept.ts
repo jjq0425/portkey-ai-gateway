@@ -31,8 +31,7 @@
 //   - 总开关在 clawAVC：若未启用，本中间件直接 no-op（流式路径下也立即放行）。
 //   - 翻译/缓存均由 clawAVC 完成，本中间件仅做 fetch + rewrite。
 
-const CLAWAVC_BASE =
-  process.env.CLAWAVC_BASE_URL || 'http://8.152.192.7:15100';
+const CLAWAVC_BASE = process.env.CLAWAVC_BASE_URL || 'http://8.152.192.7:15100';
 const TURN_IR_URL = `${CLAWAVC_BASE}/api/translator/turn-ir`;
 const SWITCH_URL = `${CLAWAVC_BASE}/api/config/intercept_non_ir_tools`;
 const EVENT_URL = `${CLAWAVC_BASE}/api/intercept/events`;
@@ -519,7 +518,8 @@ export async function interceptNonStreamingJson(
     // [loop-breaker] 死循环熔断：累计本响应的 (tool, args) 计数
     const lbEnabled = data.loop_breaker_enabled !== false;
     const lbThreshold = Math.max(2, Number(data.loop_breaker_threshold) || 3);
-    let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
+    let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
+      [];
     if (lbEnabled) {
       // 非流式 JSON 里既可能是 OpenAI 也可能是 Anthropic，两个都试
       loopOffenders = [
@@ -712,7 +712,8 @@ function aggregateOpenAIStream(buffer: string): {
         const delta = ch.delta || {};
         if (typeof delta.role === 'string') target.message.role = delta.role;
         if (typeof delta.content === 'string' && delta.content) {
-          target.message.content = (target.message.content || '') + delta.content;
+          target.message.content =
+            (target.message.content || '') + delta.content;
         }
         if (Array.isArray(delta.tool_calls)) {
           for (const tcDelta of delta.tool_calls) {
@@ -726,12 +727,15 @@ function aggregateOpenAIStream(buffer: string): {
               });
             }
             const tc = target.message.tool_calls[tcIdx];
-            if (typeof tcDelta.id === 'string' && tcDelta.id) tc.id = tcDelta.id;
+            if (typeof tcDelta.id === 'string' && tcDelta.id)
+              tc.id = tcDelta.id;
             if (typeof tcDelta.type === 'string') tc.type = tcDelta.type;
             const fn = tcDelta.function || {};
-            if (typeof fn.name === 'string' && fn.name) tc.function.name = fn.name;
+            if (typeof fn.name === 'string' && fn.name)
+              tc.function.name = fn.name;
             if (typeof fn.arguments === 'string')
-              tc.function.arguments = (tc.function.arguments || '') + fn.arguments;
+              tc.function.arguments =
+                (tc.function.arguments || '') + fn.arguments;
           }
         }
         if (ch.finish_reason) target.finish_reason = ch.finish_reason;
@@ -807,11 +811,15 @@ function aggregateAnthropicStream(buffer: string): {
       if (!blocks[idx]) blocks[idx] = { type: d.type, _text: '', _json: '' };
       if (d.type === 'text_delta' && typeof d.text === 'string') {
         blocks[idx]._text += d.text;
-      } else if (d.type === 'input_json_delta' && typeof d.partial_json === 'string') {
+      } else if (
+        d.type === 'input_json_delta' &&
+        typeof d.partial_json === 'string'
+      ) {
         blocks[idx]._json += d.partial_json;
       }
     } else if (type === 'message_delta' && json.delta) {
-      if (json.delta.stop_reason) aggregated.stop_reason = json.delta.stop_reason;
+      if (json.delta.stop_reason)
+        aggregated.stop_reason = json.delta.stop_reason;
     }
   }
   // 把 blocks 排序展开成 content[]
@@ -847,7 +855,11 @@ function aggregateAnthropicStream(buffer: string): {
  * 构造一段"拒绝消息"OpenAI chatCompletion SSE 流。
  * 形如：data: { choices:[{delta:{role:"assistant",content:"..."}}] }\n\n ... data: [DONE]\n\n
  */
-function buildOpenAIRejectStream(text: string, id: string, model: string): string {
+function buildOpenAIRejectStream(
+  text: string,
+  id: string,
+  model: string
+): string {
   const created = Math.floor(Date.now() / 1000);
   const base = {
     id: id || `chatcmpl-ir-${created}`,
@@ -857,7 +869,13 @@ function buildOpenAIRejectStream(text: string, id: string, model: string): strin
   };
   const first = {
     ...base,
-    choices: [{ index: 0, delta: { role: 'assistant', content: '' }, finish_reason: null }],
+    choices: [
+      {
+        index: 0,
+        delta: { role: 'assistant', content: '' },
+        finish_reason: null,
+      },
+    ],
   };
   const body = {
     ...base,
@@ -878,7 +896,11 @@ function buildOpenAIRejectStream(text: string, id: string, model: string): strin
 /**
  * 构造一段"拒绝消息"Anthropic messages SSE 流。
  */
-function buildAnthropicRejectStream(text: string, id: string, model: string): string {
+function buildAnthropicRejectStream(
+  text: string,
+  id: string,
+  model: string
+): string {
   const msgId = id || `msg_ir_${Date.now()}`;
   const mdl = model || 'ir-intercept';
   const messageStart = {
@@ -1009,7 +1031,11 @@ async function retryWithRejection(opts: {
       messages: workingMessages,
       // 不再强制 stream:false；保留原请求的 stream 字段
     };
-    const filteredTools = filterToolsToAllowed(gatewayRequest, allowedList, format);
+    const filteredTools = filterToolsToAllowed(
+      gatewayRequest,
+      allowedList,
+      format
+    );
     if (filteredTools !== undefined) {
       if (filteredTools.length === 0) {
         // 白名单为空 → 删掉 tools / tool_choice，让 LLM 走纯文本回答
@@ -1106,7 +1132,8 @@ async function retryWithRejection(opts: {
         const out: any = { ...m };
 
         if (role === 'assistant') {
-          const hasTcs = Array.isArray(out.tool_calls) && out.tool_calls.length > 0;
+          const hasTcs =
+            Array.isArray(out.tool_calls) && out.tool_calls.length > 0;
           if (Array.isArray(out.tool_calls) && out.tool_calls.length === 0) {
             // tool_calls=[] → 删除（OpenAI 规范不允许空数组）
             delete out.tool_calls;
@@ -1125,7 +1152,10 @@ async function retryWithRejection(opts: {
             if (out.content === null || out.content === undefined) {
               out.content = '(empty)';
               coerceCount++;
-            } else if (typeof out.content === 'string' && out.content.length === 0) {
+            } else if (
+              typeof out.content === 'string' &&
+              out.content.length === 0
+            ) {
               out.content = '(empty)';
               coerceCount++;
             }
@@ -1302,7 +1332,9 @@ async function retryWithRejection(opts: {
           ? retryRequest.messages
           : [];
         const tcs = reqMsgs
-          .filter((m: any) => m?.role === 'assistant' && Array.isArray(m.tool_calls))
+          .filter(
+            (m: any) => m?.role === 'assistant' && Array.isArray(m.tool_calls)
+          )
           .flatMap((m: any) =>
             m.tool_calls.map((tc: any) => {
               const argsStr =
@@ -1390,7 +1422,8 @@ async function retryWithRejection(opts: {
                 type: t?.type,
                 name: t?.function?.name || t?.name,
                 has_description: !!(t?.function?.description || t?.description),
-                params_type: t?.function?.parameters?.type || t?.input_schema?.type,
+                params_type:
+                  t?.function?.parameters?.type || t?.input_schema?.type,
                 params_keys: Object.keys(
                   t?.function?.parameters?.properties ||
                     t?.input_schema?.properties ||
@@ -1421,8 +1454,7 @@ async function retryWithRejection(opts: {
       //   - 流式 (stream:true，LongCat/某些 provider 仅支持流)：SSE 文本 → 聚合成 JSON
       const ctype = (retryResp.headers.get('content-type') || '').toLowerCase();
       const isSse =
-        ctype.includes('text/event-stream') ||
-        retryRequest.stream === true;
+        ctype.includes('text/event-stream') || retryRequest.stream === true;
       if (isSse) {
         const sseText = await retryResp.clone().text();
         if (format === 'openai') {
@@ -1448,7 +1480,10 @@ async function retryWithRejection(opts: {
         retryJson = await retryResp.clone().json();
       }
     } catch (e) {
-      console.error('[ir-intercept] retryWithRejection parse response failed:', e);
+      console.error(
+        '[ir-intercept] retryWithRejection parse response failed:',
+        e
+      );
       return null;
     }
 
@@ -1591,13 +1626,14 @@ function mergeConsecutiveSameRoleOpenAI(messages: any[]): any[] {
       m.role !== 'tool' &&
       typeof m.role === 'string'
     ) {
-      const prevContent =
-        typeof prev.content === 'string' ? prev.content : '';
-      const curContent =
-        typeof m.content === 'string' ? m.content : '';
+      const prevContent = typeof prev.content === 'string' ? prev.content : '';
+      const curContent = typeof m.content === 'string' ? m.content : '';
       const merged: any = { ...prev };
       const parts = [prevContent, curContent].filter((s) => s);
-      merged.content = parts.length > 0 ? parts.join('\n\n') : prev.content ?? m.content ?? null;
+      merged.content =
+        parts.length > 0
+          ? parts.join('\n\n')
+          : prev.content ?? m.content ?? null;
 
       // 合并 tool_calls（按 id 去重，没 id 的全保留）
       const prevTcs = Array.isArray(prev.tool_calls) ? prev.tool_calls : [];
@@ -1948,7 +1984,9 @@ function rebuildOpenAIStreamFromJson(json: any): string {
   chunks.push(
     `data: ${JSON.stringify({
       ...base,
-      choices: [{ index: 0, delta: { role: 'assistant' }, finish_reason: null }],
+      choices: [
+        { index: 0, delta: { role: 'assistant' }, finish_reason: null },
+      ],
     })}\n\n`
   );
   // 2) tool_calls 块（若有）
@@ -1957,12 +1995,17 @@ function rebuildOpenAIStreamFromJson(json: any): string {
       index: i,
       id: tc.id,
       type: tc.type || 'function',
-      function: { name: tc.function?.name, arguments: tc.function?.arguments || '' },
+      function: {
+        name: tc.function?.name,
+        arguments: tc.function?.arguments || '',
+      },
     }));
     chunks.push(
       `data: ${JSON.stringify({
         ...base,
-        choices: [{ index: 0, delta: { tool_calls: tcs }, finish_reason: null }],
+        choices: [
+          { index: 0, delta: { tool_calls: tcs }, finish_reason: null },
+        ],
       })}\n\n`
     );
   }
@@ -1971,7 +2014,9 @@ function rebuildOpenAIStreamFromJson(json: any): string {
     chunks.push(
       `data: ${JSON.stringify({
         ...base,
-        choices: [{ index: 0, delta: { content: msg.content }, finish_reason: null }],
+        choices: [
+          { index: 0, delta: { content: msg.content }, finish_reason: null },
+        ],
       })}\n\n`
     );
   }
@@ -1983,7 +2028,9 @@ function rebuildOpenAIStreamFromJson(json: any): string {
         {
           index: 0,
           delta: {},
-          finish_reason: choice.finish_reason || (msg.tool_calls?.length ? 'tool_calls' : 'stop'),
+          finish_reason:
+            choice.finish_reason ||
+            (msg.tool_calls?.length ? 'tool_calls' : 'stop'),
         },
       ],
     })}\n\n`
@@ -2036,14 +2083,22 @@ function rebuildAnthropicStreamFromJson(json: any): string {
         `event: content_block_start\ndata: ${JSON.stringify({
           type: 'content_block_start',
           index: idx,
-          content_block: { type: 'tool_use', id: b.id, name: b.name, input: {} },
+          content_block: {
+            type: 'tool_use',
+            id: b.id,
+            name: b.name,
+            input: {},
+          },
         })}\n\n`
       );
       chunks.push(
         `event: content_block_delta\ndata: ${JSON.stringify({
           type: 'content_block_delta',
           index: idx,
-          delta: { type: 'input_json_delta', partial_json: JSON.stringify(b.input || {}) },
+          delta: {
+            type: 'input_json_delta',
+            partial_json: JSON.stringify(b.input || {}),
+          },
         })}\n\n`
       );
     }
@@ -2057,7 +2112,10 @@ function rebuildAnthropicStreamFromJson(json: any): string {
   chunks.push(
     `event: message_delta\ndata: ${JSON.stringify({
       type: 'message_delta',
-      delta: { stop_reason: json.stop_reason || 'end_turn', stop_sequence: null },
+      delta: {
+        stop_reason: json.stop_reason || 'end_turn',
+        stop_sequence: null,
+      },
       usage: json.usage || { output_tokens: 0 },
     })}\n\n`
   );
@@ -2184,7 +2242,8 @@ export function wrapStreamingResponseWithIRIntercept(
       // 因为反复调"合法工具"也是死循环（实测 safe_file_reader__read_directory 场景）。
       const lbEnabled = data.loop_breaker_enabled !== false; // 缺省 true
       const lbThreshold = Math.max(2, Number(data.loop_breaker_threshold) || 3);
-      let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
+      let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
+        [];
       if (lbEnabled) {
         loopOffenders =
           format === 'openai'
@@ -2238,7 +2297,11 @@ export function wrapStreamingResponseWithIRIntercept(
           format === 'openai'
             ? rebuildOpenAIStreamFromJson({
                 choices: [
-                  { index: 0, message: { role: 'assistant', content: rejectText }, finish_reason: 'stop' },
+                  {
+                    index: 0,
+                    message: { role: 'assistant', content: rejectText },
+                    finish_reason: 'stop',
+                  },
                 ],
                 id: `chatcmpl-loopbrk-${Date.now()}`,
                 model: 'ir-intercept-loopbreaker',
@@ -2303,7 +2366,10 @@ export function wrapStreamingResponseWithIRIntercept(
 
       // 回退：合成"拒绝消息"流
       if (!synth) {
-        const rejectText = buildRejectMessage(violations.join(', '), allowedList);
+        const rejectText = buildRejectMessage(
+          violations.join(', '),
+          allowedList
+        );
         synth =
           format === 'openai'
             ? buildOpenAIRejectStream(
@@ -2332,9 +2398,7 @@ export function wrapStreamingResponseWithIRIntercept(
         turn_key: turnKey,
         user_query: userQuery,
         // loop_break 时把 offender tool 名称作为 violations 上报，便于前端展示
-        violations: loopBroken
-          ? loopOffenders.map((o) => o.tool)
-          : violations,
+        violations: loopBroken ? loopOffenders.map((o) => o.tool) : violations,
         allowed_tools: allowedList,
         source: 'portkey-gateway',
         extra: {
