@@ -134,35 +134,7 @@ function extractLastUserQueryAnthropic(req: any): string {
   return '';
 }
 
-/**
- * 计算一个 turn 的 key。
- *
- * 历史方案（已弃用）：用"最后一条 user 消息之前的全部消息 + 该 user 消息内容"作为锚
- * 做 hash。该方案在 Agent 自动重试场景下有严重缺陷：
- *   - Agent 收到拒绝文本后会把 assistant 拒绝消息拼进 messages 再次发往网关；
- *   - 此时 messages 数组发生了变化，anchor 哈希也变了 → turn_key 变了；
- *   - 网关把这次请求视为新 turn → 重新调 clawAVC 翻译 IR、缓存不命中、
- *     拦截事件被重复上报一份（30s 内可能出现 N 条重复条目）。
- *
- * 当前方案：**仅以"最后一条 user 消息的 sanitized 纯文本内容"作为锚**。
- *   - 同一轮用户输入下，多次到网关（思考→工具调用→再思考→retry）始终复用同一 turn_key；
- *   - 不同用户输入自动得到不同 turn_key；
- *   - sanitizeUserQuery 已剥离 OpenClaw 的 Sender 元信息块和行首时间戳前缀，
- *     保证同一用户输入在不同时刻调用得到的锚一致。
- *
- * 兼容性：若有上游/下游依赖旧 turn_key 长度（hex16）作哈希索引，由于本函数返回值
- * 仍是 fnv1aHex 输出（16 字符十六进制），所以无破坏性影响。
- */
-function computeTurnKey(req: any): string {
-  if (!req) return '';
-  // 直接复用 sanitize 后的 user_query 作为锚——即使 messages 数组形态变化，
-  // 只要用户输入内容不变，turn_key 就保持稳定。
-  const userQuery =
-    extractLastUserQueryOpenAI(req) || extractLastUserQueryAnthropic(req);
-  if (!userQuery) return '';
-  // 加上 role 标识做命名空间，避免万一以后扩展到非 user 锚时冲突
-  return fnv1aHex(JSON.stringify({ role: 'user', content: userQuery }));
-}
+
 
 function fnv1aHex(s: string): string {
   let h = 0x811c9dc5;
@@ -173,21 +145,7 @@ function fnv1aHex(s: string): string {
   return h.toString(16).padStart(8, '0');
 }
 
-interface TurnIR {
-  intercept_enabled: boolean;
-  allowed_tools: string[];
-  ir: any;
-  cached: boolean;
-  // [long-poll] 长轮询新增字段：
-  // - pending=true 表示 clawAVC 在 wait_ms 内仍未拿到 IR 翻译结果，
-  //   此时网关应**降级放行**，并由 clawAVC 自身上报一次 ir_timeout 拦截事件。
-  pending?: boolean;
-  // [loop-breaker] 由 clawAVC 下发的死循环熔断配置
-  // - loop_breaker_enabled：是否开启同 turn 同名同参 tool_call 频次熔断
-  // - loop_breaker_threshold：阈值（同 (tool_name, args_hash) 出现 N 次触发熔断；默认 3）
-  loop_breaker_enabled?: boolean;
-  loop_breaker_threshold?: number;
-}
+
 
 // ─── Loop-Breaker：同 turn 内 (tool, args_hash) 调用频次计数器 ─────────
 //
@@ -289,60 +247,8 @@ function bumpAndDetectLoopAnthropic(
   return offenders;
 }
 
-async function fetchTurnIR(
-  turnKey: string,
-  userQuery: string
-): Promise<TurnIR | null> {
-  const startedAt = Date.now();
-  try {
-    const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), TURN_FETCH_TIMEOUT_MS);
-    const resp = await fetch(TURN_IR_URL, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        turn_key: turnKey,
-        user_query: userQuery,
-        // wait_ms 不再硬编码：由 clawAVC 端 DB 配置 `intercept.turn_ir_wait_ms` 决定，
-        // 前端"安全拦截"页可动态调整。clawAVC 超时后会本端 fallback translate 一次，
-        // 仍失败才返回 pending=true 让本端降级放行。
-      }),
-      signal: ctl.signal,
-    });
-    clearTimeout(timer);
-    const elapsed = Date.now() - startedAt;
-    if (!resp.ok) {
-      console.error(
-        `[ir-intercept] turn-ir HTTP ${resp.status} url=${TURN_IR_URL} ` +
-          `elapsed=${elapsed}ms turn_key=${turnKey.slice(0, 12)}...`
-      );
-      return null;
-    }
-    const j: any = await resp.json();
-    if (!j || !j.ok || !j.data) {
-      console.error(
-        `[ir-intercept] turn-ir bad payload elapsed=${elapsed}ms body=${JSON.stringify(j).slice(0, 200)}`
-      );
-      return null;
-    }
-    console.log(
-      `[ir-intercept] turn-ir OK elapsed=${elapsed}ms ` +
-        `intercept_enabled=${j.data.intercept_enabled} ` +
-        `allowed=${(j.data.allowed_tools || []).length} ` +
-        `cached=${j.data.cached} pending=${j.data.pending === true}`
-    );
-    return j.data as TurnIR;
-  } catch (e: any) {
-    const elapsed = Date.now() - startedAt;
-    const isAbort = e?.name === 'AbortError';
-    console.error(
-      `[ir-intercept] turn-ir fetch failed (${isAbort ? 'ABORT/TIMEOUT' : 'NETWORK'}) ` +
-        `elapsed=${elapsed}ms timeout=${TURN_FETCH_TIMEOUT_MS}ms url=${TURN_IR_URL} ` +
-        `turn_key=${turnKey.slice(0, 12)}... err=${e?.message || e}`
-    );
-    return null;
-  }
-}
+// ─── IR Fetch (已移除) ────────────────────────────────────────────────────
+// 当前不需要主动获取 IR，所有功能通过 webhook 接收实现
 
 function buildRejectMessage(badTool: string, allowed: string[]): string {
   const allowedHint = allowed && allowed.length ? allowed.join(', ') : '（无）';
@@ -492,39 +398,45 @@ export async function interceptNonStreamingJson(
     const enabled = await isInterceptEnabled();
     if (!enabled) return false;
 
-    // 从请求体中抽取 user_query 与 turn_key
+    // 从请求体中抽取 user_query
     const userQuery =
       extractLastUserQueryOpenAI(gatewayRequest) ||
       extractLastUserQueryAnthropic(gatewayRequest);
-    const turnKey = computeTurnKey(gatewayRequest);
-    if (!turnKey) return false;
 
-    const data = await fetchTurnIR(turnKey, userQuery);
-    if (!data || !data.intercept_enabled) return false;
-    // [long-poll] watcher 在 5 分钟内仍未给出 IR：降级放行该 turn，
-    // clawAVC 已自行上报 ir_timeout 拦截事件，本端无需重复上报。
-    if (data.pending === true) {
-      console.warn(
-        `[ir-intercept] (non-stream) IR pending (long-poll timeout), ` +
-          `bypass intercept turn_key=${turnKey.slice(0, 12)}...`
+    // 使用 latest_round_id（在 round_start 或 round_ir_ready 时设置）
+    const roundId = _latestRoundId;
+    if (!roundId) {
+      console.log(
+        `[ir-intercept] (non-stream) ⏭️ No latest_round_id available - ALLOW\n` +
+        `   user_query: ${userQuery.slice(0, 50)}...`
       );
       return false;
     }
-    const allowedList = Array.isArray(data.allowed_tools)
-      ? data.allowed_tools
-      : [];
+
+    // 获取 IR（从缓存或等待 webhook 推送）
+    const irData = await getIR(roundId);
+    
+    // 情况1：无 IR → 放行
+    if (!irData) {
+      console.log(
+        `[ir-intercept] (non-stream) ⏭️ No IR or timeout - ALLOW\n` +
+        `   round_id: ${roundId}`
+      );
+      return false;
+    }
+    
+    const allowedList = irData.allowed_tools || [];
     const allowed = new Set<string>(allowedList);
 
     // [loop-breaker] 死循环熔断：累计本响应的 (tool, args) 计数
-    const lbEnabled = data.loop_breaker_enabled !== false;
-    const lbThreshold = Math.max(2, Number(data.loop_breaker_threshold) || 3);
-    let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
-      [];
+    const lbEnabled = true;
+    const lbThreshold = 3;
+    let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
     if (lbEnabled) {
       // 非流式 JSON 里既可能是 OpenAI 也可能是 Anthropic，两个都试
       loopOffenders = [
-        ...bumpAndDetectLoopOpenAI(turnKey, responseBodyJson, lbThreshold),
-        ...bumpAndDetectLoopAnthropic(turnKey, responseBodyJson, lbThreshold),
+        ...bumpAndDetectLoopOpenAI(roundId, responseBodyJson, lbThreshold),
+        ...bumpAndDetectLoopAnthropic(roundId, responseBodyJson, lbThreshold),
       ];
     }
     if (loopOffenders.length > 0) {
@@ -546,7 +458,7 @@ export async function interceptNonStreamingJson(
         responseBodyJson.stop_reason = 'end_turn';
       }
       console.warn(
-        `[ir-intercept] LOOP-BREAKER triggered turn=${turnKey} ` +
+        `[ir-intercept] LOOP-BREAKER triggered round=${roundId} ` +
           `threshold=${lbThreshold} ` +
           `offenders=${JSON.stringify(
             loopOffenders.map((o) => ({ tool: o.tool, count: o.count }))
@@ -557,13 +469,12 @@ export async function interceptNonStreamingJson(
         protocol: Array.isArray(responseBodyJson?.content)
           ? 'anthropic'
           : 'openai',
-        turn_key: turnKey,
+        turn_key: roundId,
         user_query: userQuery,
         violations: loopOffenders.map((o) => o.tool),
         allowed_tools: allowedList,
         source: 'portkey-gateway',
         extra: {
-          ir_cached: !!data.cached,
           loop_break: true,
           loop_break_threshold: lbThreshold,
           loop_break_offenders: loopOffenders.map((o) => ({
@@ -591,21 +502,18 @@ export async function interceptNonStreamingJson(
     if (changed) {
       const protocol = openaiViolations.length > 0 ? 'openai' : 'anthropic';
       console.log(
-        `[ir-intercept] turn=${turnKey} allowed=${allowedList.length} ` +
+        `[ir-intercept] round=${roundId} allowed=${allowedList.length} ` +
           `violations=${JSON.stringify(violations)} -> rewrote response`
       );
       // fire-and-forget 上报 clawAVC（不阻塞响应）
       reportInterceptEvent({
         event_type: 'ir_tool_block',
         protocol,
-        turn_key: turnKey,
+        turn_key: roundId,
         user_query: userQuery,
         violations,
         allowed_tools: allowedList,
         source: 'portkey-gateway',
-        extra: {
-          ir_cached: !!data.cached,
-        },
       });
     }
     return changed;
@@ -2206,49 +2114,44 @@ export function wrapStreamingResponseWithIRIntercept(
       const userQuery =
         extractLastUserQueryOpenAI(gatewayRequest) ||
         extractLastUserQueryAnthropic(gatewayRequest);
-      const turnKey = computeTurnKey(gatewayRequest);
-      if (!turnKey) {
-        await writer.write(encoder.encode(buffered));
-        replayed = true;
-        return;
-      }
-      const data = await fetchTurnIR(turnKey, userQuery);
-      if (!data || !data.intercept_enabled) {
-        await writer.write(encoder.encode(buffered));
-        replayed = true;
-        return;
-      }
-      // [long-poll] watcher 5 分钟内未完成翻译：降级放行原始流，
-      // clawAVC 已自行上报 ir_timeout 拦截事件。
-      if (data.pending === true) {
-        console.warn(
-          `[ir-intercept] (stream) IR pending (long-poll timeout), ` +
-            `bypass intercept turn_key=${turnKey.slice(0, 12)}...`
+
+      // 使用 latest_round_id（在 round_start 或 round_ir_ready 时设置）
+      const roundId = _latestRoundId;
+      if (!roundId) {
+        console.log(
+          `[ir-intercept] (stream) ⏭️ No latest_round_id available - ALLOW`
         );
         await writer.write(encoder.encode(buffered));
         replayed = true;
         return;
       }
-      const allowedList = Array.isArray(data.allowed_tools)
-        ? data.allowed_tools
-        : [];
+      
+      // 获取 IR（从缓存或等待 webhook 推送）
+      const irData = await getIR(roundId);
+      
+      // 情况1：无 IR 或开关关闭 → 放行
+      if (!irData) {
+        console.log(
+          `[ir-intercept] (stream) ⏭️ No IR or timeout - ALLOW\n` +
+          `   round_id: ${roundId}`
+        );
+        await writer.write(encoder.encode(buffered));
+        replayed = true;
+        return;
+      }
+      
+      const allowedList = irData.allowed_tools || [];
       const allowed = new Set<string>(allowedList);
-
-      // [loop-breaker] 死循环熔断检测：
-      // 对本次 aggregated 里所有 tool_calls 做 (turn, tool, args_hash) 计数。
-      // 若任一组合达到阈值（含本次） → 跳过 retry，直接合成"loop break"拒绝文本流，
-      // 强制 Agent 必须用自然语言回答，结束死循环。
-      // 注意：与 violations 判断**互斥处理**——熔断优先级高于普通 IR 拒绝，
-      // 因为反复调"合法工具"也是死循环（实测 safe_file_reader__read_directory 场景）。
-      const lbEnabled = data.loop_breaker_enabled !== false; // 缺省 true
-      const lbThreshold = Math.max(2, Number(data.loop_breaker_threshold) || 3);
-      let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
-        [];
+      
+      // [loop-breaker] 死循环熔断检测
+      const lbEnabled = true; // 默认启用
+      const lbThreshold = 3; // 默认阈值
+      let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
       if (lbEnabled) {
         loopOffenders =
           format === 'openai'
-            ? bumpAndDetectLoopOpenAI(turnKey, aggregated, lbThreshold)
-            : bumpAndDetectLoopAnthropic(turnKey, aggregated, lbThreshold);
+            ? bumpAndDetectLoopOpenAI(roundId, aggregated, lbThreshold)
+            : bumpAndDetectLoopAnthropic(roundId, aggregated, lbThreshold);
       }
 
       // 仅"收集"违规，不修改 aggregated —— 否则 retryWithRejection 拿到的
@@ -2258,13 +2161,6 @@ export function wrapStreamingResponseWithIRIntercept(
         format === 'openai'
           ? collectOpenAIViolations(aggregated, allowed)
           : collectAnthropicViolations(aggregated, allowed);
-
-      // 没有 violations 也没有熔断 → 原样放行
-      if (violations.length === 0 && loopOffenders.length === 0) {
-        await writer.write(encoder.encode(buffered));
-        replayed = true;
-        return;
-      }
 
       // 诊断：聚合后 LLM 实际请求了哪些工具
       const aggregatedToolNames =
@@ -2276,6 +2172,25 @@ export function wrapStreamingResponseWithIRIntercept(
               .filter((b: any) => b?.type === 'tool_use')
               .map((b: any) => b?.name);
 
+      // 详细日志：LLM 返回解析和白名单匹配
+      console.log(
+        `[ir-intercept] (stream) LLM response analysis round=${roundId} format=${format}:` +
+        ` LLM requested tools: [${aggregatedToolNames.join(', ')}],` +
+        ` Allowed tools: [${allowedList.join(', ')}],` +
+        ` Violations: [${violations.join(', ')}],` +
+        ` Loop breaker: enabled=${lbEnabled}, threshold=${lbThreshold}`
+      );
+
+      // 没有 violations 也没有熔断 → 原样放行
+      if (violations.length === 0 && loopOffenders.length === 0) {
+        console.log(
+          `[ir-intercept] (stream) Decision: ALLOW - all tools in whitelist, round=${roundId}`
+        );
+        await writer.write(encoder.encode(buffered));
+        replayed = true;
+        return;
+      }
+
       // [loop-breaker] 触发：跳过 retry，直接构造 loop_break 拒绝文本
       let synth: string | null = null;
       let retried = false;
@@ -2285,12 +2200,9 @@ export function wrapStreamingResponseWithIRIntercept(
       if (loopOffenders.length > 0) {
         loopBroken = true;
         console.warn(
-          `[ir-intercept] (stream) LOOP-BREAKER triggered turn=${turnKey} ` +
-            `threshold=${lbThreshold} ` +
-            `offenders=${JSON.stringify(
-              loopOffenders.map((o) => ({ tool: o.tool, count: o.count }))
-            )} ` +
-            `aggregated_tools=${JSON.stringify(aggregatedToolNames)}`
+          `[ir-intercept] (stream) Decision: LOOP_BREAK - detected infinite loop, round=${roundId}` +
+            ` Offenders: [${loopOffenders.map((o) => `${o.tool}(x${o.count})`).join(', ')}]` +
+            ` Requested tools: [${aggregatedToolNames.join(', ')}]`
         );
         const rejectText = buildLoopBreakerMessage(loopOffenders);
         synth =
@@ -2319,7 +2231,7 @@ export function wrapStreamingResponseWithIRIntercept(
 
       if (!loopBroken && violations.length > 0) {
         console.log(
-          `[ir-intercept] (stream) violations detected turn=${turnKey} ` +
+          `[ir-intercept] (stream) violations detected round=${roundId} ` +
             `format=${format} allowed=${JSON.stringify(allowedList)} ` +
             `aggregated_tools=${JSON.stringify(aggregatedToolNames)} ` +
             `violations=${JSON.stringify(violations)}`
@@ -2366,6 +2278,9 @@ export function wrapStreamingResponseWithIRIntercept(
 
       // 回退：合成"拒绝消息"流
       if (!synth) {
+        console.log(
+          `[ir-intercept] (stream) 🚫 Sending REJECTION message (retry exhausted or unavailable)`
+        );
         const rejectText = buildRejectMessage(
           violations.join(', '),
           allowedList
@@ -2387,7 +2302,7 @@ export function wrapStreamingResponseWithIRIntercept(
       replayed = true;
 
       console.log(
-        `[ir-intercept] (stream) turn=${turnKey} allowed=${allowedList.length} ` +
+        `[ir-intercept] (stream) round=${roundId} allowed=${allowedList.length} ` +
           `violations=${JSON.stringify(violations)} ` +
           `loop_broken=${loopBroken} ` +
           `retried=${retried} retried_clean=${retriedClean} -> rewrote stream`
@@ -2395,14 +2310,13 @@ export function wrapStreamingResponseWithIRIntercept(
       reportInterceptEvent({
         event_type: loopBroken ? 'ir_loop_break' : 'ir_tool_block',
         protocol: format,
-        turn_key: turnKey,
+        turn_key: roundId,
         user_query: userQuery,
         // loop_break 时把 offender tool 名称作为 violations 上报，便于前端展示
         violations: loopBroken ? loopOffenders.map((o) => o.tool) : violations,
         allowed_tools: allowedList,
         source: 'portkey-gateway',
         extra: {
-          ir_cached: !!data.cached,
           streaming: true,
           retried,
           retried_clean: retriedClean,
@@ -2434,4 +2348,199 @@ export function wrapStreamingResponseWithIRIntercept(
     statusText: response.statusText,
     headers: response.headers,
   });
+}
+
+// ─── IR Cache & Webhook Handler ──────────────────────────────────────────
+// 通过 webhook 接收 IR 并缓存，供拦截逻辑使用
+
+// IR 缓存：round_id -> IR 数据
+const _irCache = new Map<string, {
+  ir: any;
+  allowedTools: string[];
+  timestamp: number;
+}>();
+// 等待 IR 的 Promise：round_id -> resolve 函数
+const _irWaiters = new Map<string, {
+  resolve: (ir: any) => void;
+  reject: (error: Error) => void;
+  timer: NodeJS.Timeout;
+}>();
+// 最新的 round_id（在 round_start 或 round_ir_ready 时更新）
+let _latestRoundId: string | null = null;
+// 缓存 TTL：5 分钟
+const IR_CACHE_TTL_MS = 5 * 60 * 1000;
+// 等待超时：默认 30 秒
+const IR_WAIT_TIMEOUT_MS = 600 * 1000;
+
+interface PushEvent {
+  push_type: string;
+  round_id?: string;
+  ir_json?: string;
+  push_time?: string;
+}
+
+/**
+ * 从 IR JSON 中提取允许的工具列表
+ */
+function extractAllowedToolsFromIR(irJson: string): string[] {
+  try {
+    const ir = JSON.parse(irJson);
+    const tools = new Set<string>();
+    const level2 = ir.level2?.policies || [];
+    for (const pol of level2) {
+      if (pol.effect !== 'allow') continue;
+      for (const obj of pol.objects || []) {
+        if (obj.type === 'tool' && obj.identifier) {
+          tools.add(obj.identifier);
+        }
+      }
+    }
+    return Array.from(tools);
+  } catch (e) {
+    console.error('[ir-intercept] Failed to parse IR JSON:', e);
+    return [];
+  }
+}
+
+/**
+ * 处理 clawAVC 推送的 webhook 事件
+ * @param body 推送内容
+ */
+export function handlePushEvent(body: PushEvent): void {
+  console.log(
+    `[ir-intercept] 📩 Webhook received:\n` +
+    `   push_type: ${body.push_type}\n` +
+    `   round_id: ${body.round_id || 'N/A'}\n` +
+    `   ir_json_length: ${body.ir_json ? body.ir_json.length : 0}`
+  );
+  
+  // 根据 push_type 处理不同事件
+  switch (body.push_type) {
+    case 'round_ir_ready':
+      if (body.round_id && body.ir_json) {
+        const allowedTools = extractAllowedToolsFromIR(body.ir_json);
+        
+        // 更新 latest_round_id
+        _latestRoundId = body.round_id;
+        
+        // 缓存 IR
+        _irCache.set(body.round_id, {
+          ir: JSON.parse(body.ir_json),
+          allowedTools,
+          timestamp: Date.now(),
+        });
+        
+        console.log(
+          `[ir-intercept] ✅ IR cached for round=${body.round_id}\n` +
+          `   allowed_tools: [${allowedTools.join(', ')}]`
+        );
+        
+        // 直接使用 round_id 唤醒等待中的 Promise
+        const waiter = _irWaiters.get(body.round_id);
+        if (waiter) {
+          console.log(`[ir-intercept] 🔔 Waking up waiter for round=${body.round_id}`);
+          clearTimeout(waiter.timer);
+          _irWaiters.delete(body.round_id);
+          waiter.resolve({
+            ir: JSON.parse(body.ir_json),
+            allowed_tools: allowedTools,
+          });
+        } else {
+          console.log(`[ir-intercept] ⏸️ No waiter for round=${body.round_id}, IR cached for later use`);
+        }
+      }
+      break;
+      
+    case 'round_start':
+      if (body.round_id) {
+        _latestRoundId = body.round_id;
+        console.log(`[ir-intercept] 🚀 Round started: ${body.round_id}`);
+      }
+      break;
+      
+    case 'round_end':
+      if (body.round_id) {
+        console.log(`[ir-intercept] 🏁 Round ended: ${body.round_id}`);
+        // 清理缓存
+        _irCache.delete(body.round_id);
+        // 清理等待者
+        _irWaiters.delete(body.round_id);
+        // 如果结束的是当前最新的 round，清空 latest_round_id
+        if (_latestRoundId === body.round_id) {
+          _latestRoundId = null;
+        }
+      }
+      break;
+      
+    default:
+      console.log(`[ir-intercept] 📋 Unknown push_type: ${body.push_type}`);
+  }
+  
+  // 清理过期缓存
+  cleanupExpiredCache();
+}
+
+/**
+ * 清理过期的 IR 缓存
+ */
+function cleanupExpiredCache(): void {
+  const now = Date.now();
+  for (const [roundId, entry] of _irCache) {
+    if (now - entry.timestamp > IR_CACHE_TTL_MS) {
+      _irCache.delete(roundId);
+      console.log(`[ir-intercept] 🗑️ Cache expired: round=${roundId}`);
+    }
+  }
+}
+
+/**
+ * 等待 IR 就绪（带超时）
+ * @param roundId round 标识
+ * @returns IR 数据，超时返回 null
+ */
+async function waitForIR(roundId: string): Promise<any | null> {
+  console.log(`[ir-intercept] ⏳ Waiting for IR: round=${roundId}`);
+  
+  // 先检查缓存
+  const cached = _irCache.get(roundId);
+  if (cached) {
+    console.log(`[ir-intercept] ✅ IR found in cache: round=${roundId}`);
+    return cached;
+  }
+  
+  // 创建等待 Promise
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      console.warn(
+        `[ir-intercept] ⏰ IR wait timeout (${IR_WAIT_TIMEOUT_MS / 1000}s): round=${roundId}, bypass`
+      );
+      _irWaiters.delete(roundId);
+      resolve(null); // 超时返回 null，让调用方放行
+    }, IR_WAIT_TIMEOUT_MS);
+    
+    _irWaiters.set(roundId, { resolve, reject, timer });
+    console.log(`[ir-intercept] ⏳ Added waiter: round=${roundId}, timeout=${IR_WAIT_TIMEOUT_MS / 1000}s`);
+  });
+}
+
+/**
+ * 获取 IR（优先从缓存，fallback 等待）
+ */
+async function getIR(roundId: string): Promise<{ ir: any; allowed_tools: string[] } | null> {
+  // 1. 先检查缓存
+  const cached = _irCache.get(roundId);
+  if (cached) {
+    return {
+      ir: cached.ir,
+      allowed_tools: cached.allowedTools,
+    };
+  }
+  
+  // 2. 等待 webhook 推送
+  const result = await waitForIR(roundId);
+  if (!result) {
+    return null; // 超时，放行
+  }
+  
+  return result;
 }

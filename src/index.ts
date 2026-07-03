@@ -15,6 +15,7 @@ import { getRuntimeKey } from 'hono/adapter';
 import { requestValidator } from './middlewares/requestValidator';
 import { hooks } from './middlewares/hooks';
 import { memoryCache } from './middlewares/cache';
+import { handlePushEvent } from './middlewares/irIntercept';
 
 // Handlers
 import { proxyHandler } from './handlers/proxyHandler';
@@ -303,6 +304,22 @@ app.post('/v1/prompts/*', requestValidator, (c) => {
 if (runtime === 'workerd') {
   app.get('/v1/realtime', realTimeHandler);
 }
+
+// Webhook route for receiving IR push from clawAVC
+app.post('/api/webhook/ir-push', async (c: Context) => {
+  try {
+    const body = await c.req.json();
+    console.log('[ir-intercept] Webhook received:', JSON.stringify({
+      push_type: body.push_type,
+      round_id: body.round_id
+    }));
+    handlePushEvent(body);
+    return c.json({ ok: true });
+  } catch (e) {
+    console.error('[ir-intercept] Webhook error:', e);
+    return c.json({ ok: false, error: 'Invalid JSON' }, 400);
+  }
+});
 
 /**
  * @deprecated
