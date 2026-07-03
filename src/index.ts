@@ -309,10 +309,13 @@ if (runtime === 'workerd') {
 app.post('/api/webhook/ir-push', async (c: Context) => {
   try {
     const body = await c.req.json();
-    console.log('[ir-intercept] Webhook received:', JSON.stringify({
-      push_type: body.push_type,
-      round_id: body.round_id
-    }));
+    console.log(
+      '[ir-intercept] Webhook received:',
+      JSON.stringify({
+        push_type: body.push_type,
+        round_id: body.round_id,
+      })
+    );
     handlePushEvent(body);
     return c.json({ ok: true });
   } catch (e) {
