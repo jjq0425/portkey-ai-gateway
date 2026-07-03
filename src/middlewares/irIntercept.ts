@@ -134,8 +134,6 @@ function extractLastUserQueryAnthropic(req: any): string {
   return '';
 }
 
-
-
 function fnv1aHex(s: string): string {
   let h = 0x811c9dc5;
   for (let i = 0; i < s.length; i++) {
@@ -144,8 +142,6 @@ function fnv1aHex(s: string): string {
   }
   return h.toString(16).padStart(8, '0');
 }
-
-
 
 // ─── Loop-Breaker：同 turn 内 (tool, args_hash) 调用频次计数器 ─────────
 //
@@ -408,30 +404,31 @@ export async function interceptNonStreamingJson(
     if (!roundId) {
       console.log(
         `[ir-intercept] (non-stream) ⏭️ No latest_round_id available - ALLOW\n` +
-        `   user_query: ${userQuery.slice(0, 50)}...`
+          `   user_query: ${userQuery.slice(0, 50)}...`
       );
       return false;
     }
 
     // 获取 IR（从缓存或等待 webhook 推送）
     const irData = await getIR(roundId);
-    
+
     // 情况1：无 IR → 放行
     if (!irData) {
       console.log(
         `[ir-intercept] (non-stream) ⏭️ No IR or timeout - ALLOW\n` +
-        `   round_id: ${roundId}`
+          `   round_id: ${roundId}`
       );
       return false;
     }
-    
+
     const allowedList = irData.allowed_tools || [];
     const allowed = new Set<string>(allowedList);
 
     // [loop-breaker] 死循环熔断：累计本响应的 (tool, args) 计数
     const lbEnabled = true;
     const lbThreshold = 3;
-    let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
+    let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
+      [];
     if (lbEnabled) {
       // 非流式 JSON 里既可能是 OpenAI 也可能是 Anthropic，两个都试
       loopOffenders = [
@@ -2125,28 +2122,29 @@ export function wrapStreamingResponseWithIRIntercept(
         replayed = true;
         return;
       }
-      
+
       // 获取 IR（从缓存或等待 webhook 推送）
       const irData = await getIR(roundId);
-      
+
       // 情况1：无 IR 或开关关闭 → 放行
       if (!irData) {
         console.log(
           `[ir-intercept] (stream) ⏭️ No IR or timeout - ALLOW\n` +
-          `   round_id: ${roundId}`
+            `   round_id: ${roundId}`
         );
         await writer.write(encoder.encode(buffered));
         replayed = true;
         return;
       }
-      
+
       const allowedList = irData.allowed_tools || [];
       const allowed = new Set<string>(allowedList);
-      
+
       // [loop-breaker] 死循环熔断检测
       const lbEnabled = true; // 默认启用
       const lbThreshold = 3; // 默认阈值
-      let loopOffenders: Array<{ tool: string; hash: string; count: number }> = [];
+      let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
+        [];
       if (lbEnabled) {
         loopOffenders =
           format === 'openai'
@@ -2175,10 +2173,10 @@ export function wrapStreamingResponseWithIRIntercept(
       // 详细日志：LLM 返回解析和白名单匹配
       console.log(
         `[ir-intercept] (stream) LLM response analysis round=${roundId} format=${format}:` +
-        ` LLM requested tools: [${aggregatedToolNames.join(', ')}],` +
-        ` Allowed tools: [${allowedList.join(', ')}],` +
-        ` Violations: [${violations.join(', ')}],` +
-        ` Loop breaker: enabled=${lbEnabled}, threshold=${lbThreshold}`
+          ` LLM requested tools: [${aggregatedToolNames.join(', ')}],` +
+          ` Allowed tools: [${allowedList.join(', ')}],` +
+          ` Violations: [${violations.join(', ')}],` +
+          ` Loop breaker: enabled=${lbEnabled}, threshold=${lbThreshold}`
       );
 
       // 没有 violations 也没有熔断 → 原样放行
@@ -2354,17 +2352,23 @@ export function wrapStreamingResponseWithIRIntercept(
 // 通过 webhook 接收 IR 并缓存，供拦截逻辑使用
 
 // IR 缓存：round_id -> IR 数据
-const _irCache = new Map<string, {
-  ir: any;
-  allowedTools: string[];
-  timestamp: number;
-}>();
+const _irCache = new Map<
+  string,
+  {
+    ir: any;
+    allowedTools: string[];
+    timestamp: number;
+  }
+>();
 // 等待 IR 的 Promise：round_id -> resolve 函数
-const _irWaiters = new Map<string, {
-  resolve: (ir: any) => void;
-  reject: (error: Error) => void;
-  timer: NodeJS.Timeout;
-}>();
+const _irWaiters = new Map<
+  string,
+  {
+    resolve: (ir: any) => void;
+    reject: (error: Error) => void;
+    timer: NodeJS.Timeout;
+  }
+>();
 // 最新的 round_id（在 round_start 或 round_ir_ready 时更新）
 let _latestRoundId: string | null = null;
 // 缓存 TTL：5 分钟
@@ -2409,36 +2413,38 @@ function extractAllowedToolsFromIR(irJson: string): string[] {
 export function handlePushEvent(body: PushEvent): void {
   console.log(
     `[ir-intercept] 📩 Webhook received:\n` +
-    `   push_type: ${body.push_type}\n` +
-    `   round_id: ${body.round_id || 'N/A'}\n` +
-    `   ir_json_length: ${body.ir_json ? body.ir_json.length : 0}`
+      `   push_type: ${body.push_type}\n` +
+      `   round_id: ${body.round_id || 'N/A'}\n` +
+      `   ir_json_length: ${body.ir_json ? body.ir_json.length : 0}`
   );
-  
+
   // 根据 push_type 处理不同事件
   switch (body.push_type) {
     case 'round_ir_ready':
       if (body.round_id && body.ir_json) {
         const allowedTools = extractAllowedToolsFromIR(body.ir_json);
-        
+
         // 更新 latest_round_id
         _latestRoundId = body.round_id;
-        
+
         // 缓存 IR
         _irCache.set(body.round_id, {
           ir: JSON.parse(body.ir_json),
           allowedTools,
           timestamp: Date.now(),
         });
-        
+
         console.log(
           `[ir-intercept] ✅ IR cached for round=${body.round_id}\n` +
-          `   allowed_tools: [${allowedTools.join(', ')}]`
+            `   allowed_tools: [${allowedTools.join(', ')}]`
         );
-        
+
         // 直接使用 round_id 唤醒等待中的 Promise
         const waiter = _irWaiters.get(body.round_id);
         if (waiter) {
-          console.log(`[ir-intercept] 🔔 Waking up waiter for round=${body.round_id}`);
+          console.log(
+            `[ir-intercept] 🔔 Waking up waiter for round=${body.round_id}`
+          );
           clearTimeout(waiter.timer);
           _irWaiters.delete(body.round_id);
           waiter.resolve({
@@ -2446,18 +2452,20 @@ export function handlePushEvent(body: PushEvent): void {
             allowed_tools: allowedTools,
           });
         } else {
-          console.log(`[ir-intercept] ⏸️ No waiter for round=${body.round_id}, IR cached for later use`);
+          console.log(
+            `[ir-intercept] ⏸️ No waiter for round=${body.round_id}, IR cached for later use`
+          );
         }
       }
       break;
-      
+
     case 'round_start':
       if (body.round_id) {
         _latestRoundId = body.round_id;
         console.log(`[ir-intercept] 🚀 Round started: ${body.round_id}`);
       }
       break;
-      
+
     case 'round_end':
       if (body.round_id) {
         console.log(`[ir-intercept] 🏁 Round ended: ${body.round_id}`);
@@ -2471,11 +2479,11 @@ export function handlePushEvent(body: PushEvent): void {
         }
       }
       break;
-      
+
     default:
       console.log(`[ir-intercept] 📋 Unknown push_type: ${body.push_type}`);
   }
-  
+
   // 清理过期缓存
   cleanupExpiredCache();
 }
@@ -2500,14 +2508,14 @@ function cleanupExpiredCache(): void {
  */
 async function waitForIR(roundId: string): Promise<any | null> {
   console.log(`[ir-intercept] ⏳ Waiting for IR: round=${roundId}`);
-  
+
   // 先检查缓存
   const cached = _irCache.get(roundId);
   if (cached) {
     console.log(`[ir-intercept] ✅ IR found in cache: round=${roundId}`);
     return cached;
   }
-  
+
   // 创建等待 Promise
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -2517,16 +2525,20 @@ async function waitForIR(roundId: string): Promise<any | null> {
       _irWaiters.delete(roundId);
       resolve(null); // 超时返回 null，让调用方放行
     }, IR_WAIT_TIMEOUT_MS);
-    
+
     _irWaiters.set(roundId, { resolve, reject, timer });
-    console.log(`[ir-intercept] ⏳ Added waiter: round=${roundId}, timeout=${IR_WAIT_TIMEOUT_MS / 1000}s`);
+    console.log(
+      `[ir-intercept] ⏳ Added waiter: round=${roundId}, timeout=${IR_WAIT_TIMEOUT_MS / 1000}s`
+    );
   });
 }
 
 /**
  * 获取 IR（优先从缓存，fallback 等待）
  */
-async function getIR(roundId: string): Promise<{ ir: any; allowed_tools: string[] } | null> {
+async function getIR(
+  roundId: string
+): Promise<{ ir: any; allowed_tools: string[] } | null> {
   // 1. 先检查缓存
   const cached = _irCache.get(roundId);
   if (cached) {
@@ -2535,12 +2547,12 @@ async function getIR(roundId: string): Promise<{ ir: any; allowed_tools: string[
       allowed_tools: cached.allowedTools,
     };
   }
-  
+
   // 2. 等待 webhook 推送
   const result = await waitForIR(roundId);
   if (!result) {
     return null; // 超时，放行
   }
-  
+
   return result;
 }
