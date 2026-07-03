@@ -32,7 +32,6 @@
 //   - 翻译/缓存均由 clawAVC 完成，本中间件仅做 fetch + rewrite。
 
 const CLAWAVC_BASE = process.env.CLAWAVC_BASE_URL || 'http://8.152.192.7:15100';
-const TURN_IR_URL = `${CLAWAVC_BASE}/api/translator/turn-ir`;
 const SWITCH_URL = `${CLAWAVC_BASE}/api/config/intercept_non_ir_tools`;
 const EVENT_URL = `${CLAWAVC_BASE}/api/intercept/events`;
 
@@ -40,9 +39,9 @@ const SWITCH_TTL_MS = 10 * 1000; // 总开关 10s 缓存
 // 翻译长轮询：由 clawAVC 端 DB 配置 `intercept.turn_ir_wait_ms` 决定实际等待时长
 // （默认 300s，可在前端"安全拦截"页调整，范围 5s ~ 1800s）。
 // portkey 端本地 abort 兜底设为上限 + 10s buffer，避免任何配置下被本端误 abort。
-const TURN_IR_LONG_POLL_MAX_MS = 30 * 60 * 1000;
-const TURN_FETCH_TIMEOUT_MS = TURN_IR_LONG_POLL_MAX_MS + 10_000;
 const EVENT_REPORT_TIMEOUT_MS = 5 * 1000;
+let IR_WAIT_TIMEOUT_MS = 600 * 1000;
+let LOOP_THRESHOLD = 3
 
 let _switchCache: { enabled: boolean; ts: number } | null = null;
 
@@ -243,8 +242,7 @@ function bumpAndDetectLoopAnthropic(
   return offenders;
 }
 
-// ─── IR Fetch (已移除) ────────────────────────────────────────────────────
-// 当前不需要主动获取 IR，所有功能通过 webhook 接收实现
+
 
 function buildRejectMessage(badTool: string, allowed: string[]): string {
   const allowedHint = allowed && allowed.length ? allowed.join(', ') : '（无）';
@@ -426,7 +424,7 @@ export async function interceptNonStreamingJson(
 
     // [loop-breaker] 死循环熔断：累计本响应的 (tool, args) 计数
     const lbEnabled = true;
-    const lbThreshold = 3;
+    const lbThreshold = LOOP_THRESHOLD;
     let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
       [];
     if (lbEnabled) {
@@ -2142,7 +2140,7 @@ export function wrapStreamingResponseWithIRIntercept(
 
       // [loop-breaker] 死循环熔断检测
       const lbEnabled = true; // 默认启用
-      const lbThreshold = 3; // 默认阈值
+      const lbThreshold = LOOP_THRESHOLD; // 默认阈值
       let loopOffenders: Array<{ tool: string; hash: string; count: number }> =
         [];
       if (lbEnabled) {
@@ -2374,7 +2372,7 @@ let _latestRoundId: string | null = null;
 // 缓存 TTL：5 分钟
 const IR_CACHE_TTL_MS = 5 * 60 * 1000;
 // 等待超时：默认 30 秒
-const IR_WAIT_TIMEOUT_MS = 600 * 1000;
+
 
 interface PushEvent {
   push_type: string;
