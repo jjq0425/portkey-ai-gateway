@@ -41,7 +41,7 @@ const SWITCH_TTL_MS = 10 * 1000; // 总开关 10s 缓存
 // portkey 端本地 abort 兜底设为上限 + 10s buffer，避免任何配置下被本端误 abort。
 const EVENT_REPORT_TIMEOUT_MS = 5 * 1000;
 let IR_WAIT_TIMEOUT_MS = 600 * 1000;
-let LOOP_THRESHOLD = 3
+let LOOP_THRESHOLD = 3;
 
 let _switchCache: { enabled: boolean; ts: number } | null = null;
 
@@ -241,8 +241,6 @@ function bumpAndDetectLoopAnthropic(
   }
   return offenders;
 }
-
-
 
 function buildRejectMessage(badTool: string, allowed: string[]): string {
   const allowedHint = allowed && allowed.length ? allowed.join(', ') : '（无）';
@@ -2372,7 +2370,6 @@ let _latestRoundId: string | null = null;
 // 缓存 TTL：5 分钟
 const IR_CACHE_TTL_MS = 5 * 60 * 1000;
 // 等待超时：默认 30 秒
-
 
 interface PushEvent {
   push_type: string;
